@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var CSS_FILES = ['aj-shared.css', 'aj-fonts.css', 'aj-chrome.css'];
+  var CSS_FILES = ['aj-shared.css', 'aj-fonts.css', 'aj-chrome.css', 'aj-responsive.css'];
   var HEADER_URL = 'aj-header.html';
   var FOOTER_URL = 'aj-footer.html';
 
@@ -76,8 +76,17 @@
 
   /* The header is inert without its behaviour scripts — load them after injection
      so the ask bar expands and the ticker scrolls exactly as on the homepage. */
+  /* bundle pages rebuild <head> at boot, dropping the static viewport meta */
+  function ensureViewport() {
+    if (document.querySelector('meta[name="viewport"]')) return;
+    var m = document.createElement('meta');
+    m.name = 'viewport';
+    m.content = 'width=device-width, initial-scale=1.0';
+    document.head.appendChild(m);
+  }
+
   function ensureScripts() {
-    ['aj-ask.js'].forEach(function (src) {
+    ['aj-ask.js', 'aj-mobile-nav.js'].forEach(function (src) {
       if (document.querySelector('script[src^="' + src + '"]')) return;
       var s = document.createElement('script');
       s.src = src + '?v=1';
@@ -119,6 +128,7 @@
 
   function init() {
     ensureCss();
+    ensureViewport();
     scopeLinkColours();
     if (/account/i.test(location.pathname)) whiteBackground();
 
@@ -137,6 +147,8 @@
       if (needHeader) ensureScripts();
       var n = 0, iv = setInterval(function () {
         stripBundleChrome(sel);
+        ensureCss();          // bundle boot may have wiped the injected links
+        ensureViewport();
         if (isAccount) { dropDuplicateStrip(); dropTicker(); }
         if (++n > 20) clearInterval(iv);
       }, 250);

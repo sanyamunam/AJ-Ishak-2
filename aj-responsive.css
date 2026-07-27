@@ -66,6 +66,11 @@
 
   /* sticky rails read as pinned columns on desktop only */
   main .sticky, main [class*="sticky"] { position: static !important; }
+  main [class~="sticky"][class~="shrink-0"] {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
 
   /* --- stacked layout ---------------------------------------------------- */
 
@@ -337,6 +342,15 @@
   }
   /* the oversized trophy artwork behind the strip swallows the content */
   main div[class~="border-y"][class*="bg-[#202020]"] > div[class~="pointer-events-none"] { display: none; }
+
+  /* --- bundle pages (games/account, #dc-root) ----------------------------
+     their layout comes from inline styles, hence the !important overrides */
+  #dc-root main { flex-direction: column !important; }
+  #dc-root main > aside {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  #dc-root main > section { width: 100%; }
 
   /* --- footer ------------------------------------------------------------ */
   footer > div > div { flex-wrap: wrap; padding-left: 16px; padding-right: 16px; }

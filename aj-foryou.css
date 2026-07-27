@@ -1393,6 +1393,7 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
 }
 
 @media (max-width: 1024px) {
+  .fy-shell { padding-inline: 16px; box-sizing: border-box; }
   .fy-greeting__row { flex-direction: column; align-items: flex-start; gap: 24px; }
   .fy-ticker { flex-direction: column; align-items: stretch; }
   .fy-ticker__note { padding: 24px 24px 0; }
