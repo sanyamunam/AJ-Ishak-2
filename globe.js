@@ -132,7 +132,11 @@
 
     /* keep the story panel flush with the window's right edge, even when the
        mx-auto max-w-[1920px] container stops short of it on wide screens */
+    /* below 1024px aj-responsive.css stacks the panels — the desktop
+       pin/offset math no longer applies */
+    function isStacked() { return window.innerWidth <= 1023; }
     function pinPanelRight() {
+      if (isStacked()) { rightPanel.style.right = ''; return; }
       rightPanel.style.right = '0px';
       var r = rightPanel.getBoundingClientRect();
       var scale = rightPanel.offsetWidth ? r.width / rightPanel.offsetWidth : 1;
@@ -145,6 +149,7 @@
        the story panel — offset the map to sit centred in the space actually visible */
     var mapDX = 0;
     function computeMapOffset() {
+      if (isStacked()) { mapDX = 0; return; }
       var wr = wrap.getBoundingClientRect(), pr = rightPanel.getBoundingClientRect();
       var scale = wrap.offsetWidth ? wr.width / wrap.offsetWidth : 1;
       var dx = (pr.left - wr.right) / 2 / (scale || 1);
