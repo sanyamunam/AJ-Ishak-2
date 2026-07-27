@@ -47,6 +47,46 @@
       if (document.body.classList.contains('aj-nav-open') &&
           !nav.contains(e.target) && !btn.contains(e.target)) setOpen(false);
     });
+
+    /* On mobile the Light/Paper/Dark toggle and the EN/ع language selector
+       live inside the menu panel; the rest of the black top strip is hidden
+       (aj-responsive.css keys off header.aj-mnav-moved). The originals are
+       MOVED, not cloned, so their click handlers stay attached, and they're
+       returned to their desktop slots when the viewport grows again. */
+    var themeBtn = [].filter.call(header.querySelectorAll('button'), function (b) {
+      return /^(Light|Paper|Dark)$/.test((b.textContent || '').trim());
+    })[0];
+    var theme = themeBtn && themeBtn.parentElement;
+    var lang = [].filter.call(header.querySelectorAll('a'), function (a) {
+      return a.querySelector('img[alt="العربية"]');
+    })[0];
+
+    var extras = document.createElement('div');
+    extras.className = 'aj-nav-extras';
+    nav.appendChild(extras);
+
+    var homes = [];
+    function rememberHome(el) {
+      homes.push({ el: el, parent: el.parentElement, next: el.nextSibling });
+    }
+    if (theme) rememberHome(theme);
+    if (lang) rememberHome(lang);
+
+    var mq = window.matchMedia('(max-width: 1023px)');
+    function place() {
+      if (mq.matches) {
+        homes.forEach(function (h) { extras.appendChild(h.el); });
+        header.classList.add('aj-mnav-moved');
+      } else {
+        homes.forEach(function (h) { h.parent.insertBefore(h.el, h.next); });
+        header.classList.remove('aj-mnav-moved');
+      }
+    }
+    if (homes.length) {
+      place();
+      if (mq.addEventListener) mq.addEventListener('change', place);
+      else mq.addListener(place);
+    }
     return true;
   }
 
