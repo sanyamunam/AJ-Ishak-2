@@ -194,6 +194,34 @@
      toggle has been relocated into the menu panel */
   header.aj-mnav-moved > div:first-child { display: none; }
 
+  /* brand logo rides beside the burger; auto margin pushes WATCH LIVE right */
+  header .aj-nav-row a[data-aj-mnav-brand] {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    margin-left: 4px;
+  }
+  /* 199.2 x 72 natural size — keep the ratio explicit, the SVG stretches */
+  header .aj-nav-row a[data-aj-mnav-brand] img {
+    height: 36px !important;
+    width: 100px !important;
+  }
+
+  /* compact WATCH LIVE button */
+  header .aj-nav-row button[class*="bg-[#ff435f]"] {
+    padding: 10px 14px !important;
+    gap: 7px !important;
+  }
+  /* the play icon's SVG has no intrinsic size — width:auto would balloon
+     to the 300px replaced-element default */
+  header .aj-nav-row button[class*="bg-[#ff435f]"] img {
+    height: 12px !important;
+    width: 10px !important;
+  }
+  header .aj-nav-row button[class*="bg-[#ff435f]"] span {
+    font-size: 12px !important;
+  }
+
   /* theme toggle + language selector inside the menu panel */
   header nav .aj-nav-extras {
     display: flex;

@@ -65,17 +65,23 @@
     extras.className = 'aj-nav-extras';
     nav.appendChild(extras);
 
+    /* the brand logo sits beside the burger on mobile */
+    var brandImg = header.querySelector('a img[alt="Al Jazeera"]');
+    var brand = brandImg && brandImg.closest('a');
+    if (brand) brand.setAttribute('data-aj-mnav-brand', '1');
+
     var homes = [];
-    function rememberHome(el) {
-      homes.push({ el: el, parent: el.parentElement, next: el.nextSibling });
+    function rememberHome(el, put) {
+      homes.push({ el: el, parent: el.parentElement, next: el.nextSibling, put: put });
     }
-    if (theme) rememberHome(theme);
-    if (lang) rememberHome(lang);
+    if (theme) rememberHome(theme, function (el) { extras.appendChild(el); });
+    if (lang) rememberHome(lang, function (el) { extras.appendChild(el); });
+    if (brand) rememberHome(brand, function (el) { btn.insertAdjacentElement('afterend', el); });
 
     var mq = window.matchMedia('(max-width: 1023px)');
     function place() {
       if (mq.matches) {
-        homes.forEach(function (h) { extras.appendChild(h.el); });
+        homes.forEach(function (h) { h.put(h.el); });
         header.classList.add('aj-mnav-moved');
       } else {
         homes.forEach(function (h) { h.parent.insertBefore(h.el, h.next); });
