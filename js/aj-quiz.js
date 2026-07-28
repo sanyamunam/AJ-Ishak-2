@@ -266,12 +266,16 @@
   function openCrosswordFromHash() {
     if (location.hash !== '#crossword') return;
     var n = 0, iv = setInterval(function () {
+      if (++n > 60) return clearInterval(iv);
+      /* innerText = rendered text only (script source would false-positive) */
+      var quizShowing = (document.body.innerText || '').indexOf('Question 1/3') !== -1;
+      if (!quizShowing) return; // either not mounted yet, or already switched
       var cta = [].filter.call(document.querySelectorAll('div'), function (el) {
-        return el.children.length <= 2 && /^PLAY\s*→$/.test((el.textContent || '').trim());
+        return el.children.length <= 2 && /^PLAY\s*→$/.test((el.innerText || '').trim());
       }).pop();
-      if (cta) { cta.click(); clearInterval(iv); }
-      else if (++n > 50) clearInterval(iv);
-    }, 200);
+      if (!cta) return;
+      cta.click(); // keep retrying until the quiz view actually goes away
+    }, 300);
   }
 
   function init() {
