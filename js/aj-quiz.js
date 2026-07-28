@@ -278,10 +278,84 @@
     }, 300);
   }
 
+  /* The bundle's DC logic sometimes dies mid-render (its nested JSON unpack
+     throws), leaving the static template: the question column shows only
+     "Question 1/3" with no option scaffold, so tryMount() waits forever and
+     the card looks stuck loading. After ~2s of that, build the scaffold
+     ourselves inside the question column and let the normal takeover run. */
+  function buildFallback() {
+    if (tpl(61)) return false;                 // real scaffold arrived after all
+    var host = tpl(59);
+    if (!host || host.getAttribute('data-ajq-fb')) return false;
+    host.setAttribute('data-ajq-fb', '1');
+
+    /* free up the ids the takeover queries: 58 = score-card column, 29 = section */
+    var art = tpl(58);
+    if (art) art.removeAttribute('data-dc-tpl');
+    if (!tpl(29)) {
+      var sec = tpl(54) || host.parentElement;
+      if (sec) sec.setAttribute('data-dc-tpl', '29');
+    }
+    host.setAttribute('data-dc-tpl', '58');
+
+    host.innerHTML = '';
+    host.style.display = 'flex';
+    host.style.flexDirection = 'column';
+    host.style.gap = '18px';
+
+    var head = document.createElement('div');
+    head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:16px';
+    var label = document.createElement('div');
+    label.setAttribute('data-dc-tpl', '59');
+    label.style.cssText = 'font:600 13px/1 Anybody,Arial,sans-serif;letter-spacing:.4px;color:#9a9a9a;text-transform:uppercase';
+    var strip = document.createElement('div');
+    strip.style.cssText = 'display:flex;gap:6px';
+    [126, 127, 128].forEach(function (n) {
+      var c = document.createElement('span');
+      c.setAttribute('data-dc-tpl', String(n));
+      c.style.cssText = 'width:26px;height:26px;flex:none';
+      strip.appendChild(c);
+    });
+    head.appendChild(label);
+    head.appendChild(strip);
+
+    var q = document.createElement('h3');
+    q.setAttribute('data-dc-tpl', '60');
+    q.style.cssText = 'margin:0;font:700 26px/1.3 "Source Serif 4",Georgia,serif;color:#141414';
+
+    var opts = document.createElement('div');
+    opts.setAttribute('data-dc-tpl', '61');
+    opts.style.cssText = 'display:flex;flex-direction:column;gap:10px;width:100%';
+
+    host.appendChild(head);
+    host.appendChild(q);
+    host.appendChild(opts);
+    return true;
+  }
+
+  /* "Mounted" must mean the options are really on screen: after the bundle's
+     document.write pass the section can carry a stale data-ajq marker from the
+     pre-write run, making tryMount() report success without ever rendering. */
+  function mounted() {
+    return !!document.querySelector('.ajq-opt') || !!document.querySelector('.ajq-done');
+  }
+
   function init() {
     openCrosswordFromHash();
-    if (tryMount()) return;
-    var n = 0, iv = setInterval(function () { if (tryMount() || ++n > 40) clearInterval(iv); }, 200);
+    tryMount();
+    if (mounted()) return;
+    var n = 0, iv = setInterval(function () {
+      tryMount();
+      if (mounted()) return clearInterval(iv);
+      if (++n === 10) {                          // ~2s: bundle logic is dead, self-serve
+        buildFallback();
+        var sec = tpl(29);
+        if (sec) sec.removeAttribute('data-ajq'); // clear stale marker so tryMount re-runs
+        tryMount();
+        if (mounted()) return clearInterval(iv);
+      }
+      if (n > 40) clearInterval(iv);
+    }, 200);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

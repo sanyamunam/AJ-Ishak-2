@@ -3567,7 +3567,8 @@ a[href="aljazeera-article.html"]:not(.aj-dark-card):hover :is(p,h1,h2,h3,h4){col
 @media (prefers-reduced-motion: reduce){a[href="aljazeera-article.html"]:hover img{transform:none}}
 </style>
 <style id="aj-ticker-style">
-.aj-ticker{position:fixed;left:0;right:0;bottom:0;width:100%;z-index:50;box-shadow:0 -6px 20px rgba(0,0,0,.25)}
+/* headline strip suppressed on the article detail page */
+.aj-ticker{display:none !important}
 .aj-ticker-viewport{overflow:hidden}
 .aj-ticker-track{display:flex!important;width:max-content!important;gap:0!important;justify-content:flex-start!important;overflow:visible!important;animation:ajTicker 45s linear infinite;will-change:transform}
 .aj-ticker-group{display:flex;align-items:center;gap:12px;padding-right:12px;flex:none}
@@ -3653,4 +3654,4 @@ a[href="aljazeera-article.html"]:not(.aj-dark-card):hover :is(p,h1,h2,h3,h4){col
   if(document.readyState==='complete')init();else window.addEventListener('load',init);
 })();
 </script>
-<script src="js/aj-article.js?v=1" defer></script><script src="js/aj-lazy.js?v=1" defer></script><script src="js/aj-opinions.js?v=1" defer></script><script src="js/aj-ask.js?v=1" defer></script><script src="js/aj-mobile-nav.js?v=1" defer></script></body></html>
+<script src="js/aj-article.js?v=1" defer></script><script src="js/aj-lazy.js?v=1" defer></script><script src="js/aj-opinions.js?v=1" defer></script><script src="js/aj-ask.js?v=1" defer></script><script src="js/aj-mobile-nav.js?v=1" defer></script><script src="js/aj-summary.js?v=1" defer></script></body></html>
