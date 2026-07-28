@@ -268,7 +268,7 @@
     var n = 0, iv = setInterval(function () {
       if (++n > 60) return clearInterval(iv);
       /* innerText = rendered text only (script source would false-positive) */
-      var quizShowing = (document.body.innerText || '').indexOf('Question 1/3') !== -1;
+      var quizShowing = /question 1\/3/i.test(document.body.innerText || '');
       if (!quizShowing) return; // either not mounted yet, or already switched
       var cta = [].filter.call(document.querySelectorAll('div'), function (el) {
         return el.children.length <= 2 && /^PLAY\s*→$/.test((el.innerText || '').trim());
