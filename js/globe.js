@@ -429,6 +429,11 @@
     }
     function tick() {
       if (mode !== 'globe') { raf = null; return; }
+      // drawing while the globe is off-screen forces continuous style recalcs
+      // on a very large DOM, starving the whole page's frame budget — park the
+      // loop and let the visibility poll below restart it
+      var cr = canvas.getBoundingClientRect();
+      if (!cr.width || cr.bottom < 0 || cr.top > window.innerHeight) { raf = null; return; }
       if (tYaw !== null) {
         var dy = ((tYaw - yaw + Math.PI) % (2 * Math.PI)) - Math.PI;
         yaw += dy * 0.12; pitch += (tPitch - pitch) * 0.12;
@@ -439,6 +444,13 @@
       raf = requestAnimationFrame(tick);
     }
     function startGlobe() { sizeCanvas(); if (!raf) tick(); }
+    // cheap poll (timers still fire between long frames) that restarts the
+    // parked loop once the globe scrolls back into view
+    setInterval(function () {
+      if (mode !== 'globe' || raf) return;
+      var cr = canvas.getBoundingClientRect();
+      if (cr.width && cr.bottom > 0 && cr.top < window.innerHeight) { raf = requestAnimationFrame(tick); }
+    }, 400);
 
     canvas.addEventListener('mousedown', function (e) { if (inDetail) closeDetail(); dragging = true; focusEntry = null; tYaw = null; gMarkerLayer.classList.remove('focusing'); clearActive(); lastX = e.clientX; lastY = e.clientY; canvas.classList.add('dragging'); });
     window.addEventListener('mouseup', function () { dragging = false; canvas.classList.remove('dragging'); });

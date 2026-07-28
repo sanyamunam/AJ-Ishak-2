@@ -260,7 +260,22 @@
     return true;
   }
 
+  /* Deep link: aljazeera-games.html#crossword opens the Mini Crossword instead
+     of the Daily Quiz. The React bundle only switches views through its own
+     "PLAY →" CTA (openXword), so we click that once it mounts. */
+  function openCrosswordFromHash() {
+    if (location.hash !== '#crossword') return;
+    var n = 0, iv = setInterval(function () {
+      var cta = [].filter.call(document.querySelectorAll('div'), function (el) {
+        return el.children.length <= 2 && /^PLAY\s*→$/.test((el.textContent || '').trim());
+      }).pop();
+      if (cta) { cta.click(); clearInterval(iv); }
+      else if (++n > 50) clearInterval(iv);
+    }, 200);
+  }
+
   function init() {
+    openCrosswordFromHash();
     if (tryMount()) return;
     var n = 0, iv = setInterval(function () { if (tryMount() || ++n > 40) clearInterval(iv); }, 200);
   }

@@ -59,6 +59,13 @@
     setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 450);
   }
 
+  /* Prototype dead-end links (href="#") shouldn't yank the page back to the
+     top when clicked — swallow them. */
+  document.addEventListener('click', function (e) {
+    var stub = e.target.closest && e.target.closest('a[href="#"]');
+    if (stub) e.preventDefault();
+  });
+
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[href$=".html"]');
     if (!a) return;
