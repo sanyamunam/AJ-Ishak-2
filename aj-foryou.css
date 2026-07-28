@@ -116,12 +116,16 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
   color: var(--fy-muted);
 }
 
-/* pill pair: LISTEN + AI BRIEF */
+/* pill pair: LISTEN + AI BRIEF — same bordered toolbar pattern as the
+   article page's SHARE | LISTEN | Summarize bar (border-y + vertical
+   dividers, not a boxed pill) */
 .fy-pills {
   display: flex;
   align-items: stretch;
   flex: none;
-  border: 1px solid rgba(32, 32, 32, 0.2);
+  height: 43px;
+  border-top: 1px solid #dfdfdf;
+  border-bottom: 1px solid #dfdfdf;
 }
 
 .fy-pill {
@@ -133,9 +137,10 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
   letter-spacing: -0.04em;
   color: #575757;
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.fy-pill + .fy-pill { border-left: 1px solid #dcdcd4; }
+.fy-pill + .fy-pill { border-left: 1px solid #dfdfdf; }
 .fy-pill--brief { padding-right: 8px; }
 .fy-pill__spark { width: 15px; height: 15px; flex: none; }
 

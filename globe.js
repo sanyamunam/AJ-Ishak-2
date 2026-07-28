@@ -222,6 +222,7 @@
     var ctx = canvas.getContext('2d');
     var yaw = 0.5, pitch = -0.35, tYaw = null, tPitch = null, dragging = false, lastX = 0, lastY = 0;
     var focusEntry = null, raf = null, DPR = Math.min(window.devicePixelRatio || 1, 2), gZoom = 1;
+    var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var _ringFor = null, _ringCache = null; // avoid re-scanning every country ring every frame
     function focusCountryRing(entry) {
       if (entry !== _ringFor) { _ringFor = entry; _ringCache = findCountryRing(entry.lon, entry.lat); }
@@ -374,13 +375,24 @@
       drawGraticule(cx, cy, R);
       drawCoastlines(cx, cy, R);
 
-      // the focused story's whole country lifts out of the outline work
+      // the focused story's whole country lifts out of the outline work,
+      // with a soft light band sweeping across the fill (shimmer)
       if (focusEntry) {
         var countryRing = focusCountryRing(focusEntry);
         if (countryRing) {
           ctx.beginPath();
           pathGeo(countryRing, false, cx, cy, R);
-          ctx.fillStyle = 'rgba(255,255,255,.22)';
+          if (REDUCE_MOTION) {
+            ctx.fillStyle = 'rgba(255,255,255,.22)';
+          } else {
+            var st = (performance.now() % 2800) / 2800;
+            var sx = cx - R * 1.5 + 3 * R * st;
+            var shim = ctx.createLinearGradient(sx - R * 0.55, cy - R * 0.55, sx + R * 0.55, cy + R * 0.55);
+            shim.addColorStop(0, 'rgba(255,255,255,.20)');
+            shim.addColorStop(0.5, 'rgba(255,255,255,.36)');
+            shim.addColorStop(1, 'rgba(255,255,255,.20)');
+            ctx.fillStyle = shim;
+          }
           ctx.fill('nonzero');
           ctx.strokeStyle = 'rgba(255,255,255,.9)';
           ctx.lineWidth = 1.4;
@@ -510,33 +522,92 @@
     (function () {
       var s = document.createElement('style'); s.id = 'aj-gd-detail-style';
       s.textContent = [
-        '.aj-gd-detail{display:none;flex:1 1 auto;min-height:0;flex-direction:column;gap:20px;padding:64px 40px;width:100%;box-sizing:border-box;color:#fff;overflow-y:auto}',
+        '.aj-gd-detail{display:none;flex:1 1 auto;min-height:0;flex-direction:column;gap:0;padding:48px 0 0;width:100%;box-sizing:border-box;color:#fff;overflow:hidden}',
         '.aj-globe-detailing .aj-globe-list{display:none}',
         '.aj-globe-detailing .aj-gd-detail{display:flex}',
-        '.aj-gd-back{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;font:600 12px/1 Arial,sans-serif;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.6);cursor:pointer;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.15);padding:0 0 18px;width:100%;text-align:left;transition:color .2s ease}',
+        /* the panel itself carries py-[64px]; while the detail is up, the detail
+           owns its top spacing and the AI strip must touch the panel bottom */
+        '.aj-globe-detailing{padding-top:0!important;padding-bottom:0!important}',
+        '.aj-gd-back{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;margin:0 32px;font:700 11px/1 inherit;letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,255,255,.62);cursor:pointer;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.14);padding:0 0 16px;width:calc(100% - 64px);text-align:left;transition:color .2s ease}',
         '.aj-gd-back:hover{color:#fff}',
-        '.aj-gd-kicker{display:flex;align-items:center;gap:10px;font:700 12px/1 Arial,sans-serif;letter-spacing:1.2px;text-transform:uppercase}',
-        '.aj-gd-kicker .dot{width:9px;height:9px;border-radius:50%;background:var(--c,#ef304a)}',
+        '.aj-gd-kicker{display:flex;align-items:center;gap:10px;margin:40px 32px 0;font:700 11.5px/1 inherit;letter-spacing:1.6px;text-transform:uppercase}',
+        '.aj-gd-kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--c,#ef304a)}',
         '.aj-gd-kicker .live{background:#e3b23c;color:#111;padding:3px 7px;font-weight:800}',
-        '.aj-gd-kicker .reg{color:rgba(255,255,255,.5)}',
-        '.aj-gd-head{font-family:Lora,Georgia,serif;font-size:38px;line-height:1.14;font-weight:600;margin:2px 0 0}',
-        '.aj-gd-sum{background:#17171f;border-left:3px solid #7c5cff;padding:20px 22px;font-size:17px;line-height:1.55;color:#e9e9ef}',
-        '.aj-gd-sum b{color:#a996ff;margin-right:6px}',
-        '.aj-gd-summeta{font:600 11px/1.4 Arial,sans-serif;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4)}',
-        '.aj-gd-stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(255,255,255,.14)}',
-        '.aj-gd-stats>div{padding:18px 16px;border-right:1px solid rgba(255,255,255,.14)}',
+        '.aj-gd-kicker .reg{color:rgba(255,255,255,.55);font-weight:500}',
+        '.aj-gd-head{font-family:Lora,Georgia,serif;font-size:28px;line-height:1.28;font-weight:600;margin:10px 32px 0}',
+        '.aj-gd-body{margin:20px 32px 0;font-size:14.5px;line-height:1.55;color:rgba(255,255,255,.8)}',
+        '.aj-gd-stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(255,255,255,.14);margin:28px 32px 0}',
+        '.aj-gd-stats>div{padding:12px 16px;border-right:1px solid rgba(255,255,255,.14)}',
         '.aj-gd-stats>div:last-child{border-right:0}',
-        '.aj-gd-stats b{display:block;font-family:Lora,serif;font-size:26px;font-weight:700}',
-        '.aj-gd-stats span{display:block;margin-top:6px;font:600 10.5px/1.3 Arial,sans-serif;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5)}',
-        '.aj-gd-ctarow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:2px}',
-        '.aj-gd-cta{display:inline-flex;align-items:center;gap:8px;background:#e3b23c;color:#111;font:700 13px/1 Arial,sans-serif;letter-spacing:.5px;text-transform:uppercase;padding:16px 22px;text-decoration:none;transition:background .2s ease}',
+        '.aj-gd-stats span{display:block;margin-bottom:6px;font:600 10.5px/1.3 inherit;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5)}',
+        '.aj-gd-stats b{display:block;font-family:Anybody,Arial,sans-serif;font-size:21px;font-weight:700}',
+        '.aj-gd-ctarow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:28px 32px 0}',
+        '.aj-gd-cta{display:inline-flex;align-items:center;gap:8px;background:#e8b53a;color:#111;font:900 11px/1 inherit;letter-spacing:.8px;text-transform:uppercase;padding:12px 16px;text-decoration:none;transition:background .2s ease}',
         '.aj-gd-cta:hover{background:#eec158}',
-        '.aj-gd-upd{font:600 11px/1 Arial,sans-serif;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4)}'
+        '.aj-gd-upd{font:600 10.5px/1 inherit;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.42)}',
+
+        /* --- AI "right now" summary, pinned to the panel foot --- */
+        '.aj-gd-ai{margin-top:auto;width:100%;padding-top:24px}',
+        '.aj-gd-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 32px 12px;font:600 10.5px/1 inherit;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.45)}',
+        '.aj-gd-ai-head .rev{display:inline-flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font:600 12.5px/1 inherit;color:#fff}',
+        '.aj-gd-ai-head .rev i{font-style:normal;color:#e3b23c;font-size:13px}',
+        '.aj-gd-ai-card{position:relative;display:flex;gap:14px;align-items:flex-start;padding:24px 32px 36px;',
+        '  background:linear-gradient(120deg,#1b1c2c 0%,#1c1d2e 55%,#2a1f33 86%,#3a2333 100%)}',
+        '.aj-gd-ai-card::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;',
+        '  background:linear-gradient(90deg,#3563e9 0%,#7c5cff 38%,#c04b8f 72%,#c0392b 100%)}',
+        /* the AI marker is the shared animated aura orb (aj-aura-orb.css) */
+        '.aj-gd-ai-card .spark{flex:none;margin-top:1px}',
+        '.aj-gd-ai-col{flex:1 1 auto;min-width:0}',
+        '.aj-gd-ai-txt{margin:0;font-size:15.5px;line-height:1.6;color:#fff;min-height:calc(1.6em * 3)}',
+        '.aj-gd-ai-txt.typing::after{content:"";display:inline-block;width:9px;height:15px;margin-left:3px;vertical-align:-2px;background:#a996ff;animation:ajGdCaret .8s steps(1) infinite}',
+        '@keyframes ajGdCaret{50%{opacity:0}}',
+        '.aj-gd-ai-meta{display:flex;align-items:center;gap:18px;margin-top:15px;font:600 10px/1 inherit;letter-spacing:1px;text-transform:uppercase;opacity:0;transition:opacity .45s ease}',
+        '.aj-gd-ai-meta.on{opacity:1}',
+        '.aj-gd-ai-meta .tag{color:#8fa7f5}',
+        '.aj-gd-ai-meta .ok{display:inline-flex;align-items:center;gap:5px;color:rgba(255,255,255,.55)}',
+        '.aj-gd-ai-meta .ok svg{width:11px;height:11px;flex:none}',
+
+        /* --- lazy-load entrance: blocks rise in one after another --- */
+        '.aj-gd-detail>*{opacity:0;transform:translateY(26px);transition:opacity .65s ease,transform .8s cubic-bezier(.22,.61,.36,1)}',
+        '.aj-gd-detail.is-in>*{opacity:1;transform:none}',
+        '.aj-gd-detail>*:nth-child(2){transition-delay:.1s}',
+        '.aj-gd-detail>*:nth-child(3){transition-delay:.2s}',
+        '.aj-gd-detail>*:nth-child(4){transition-delay:.3s}',
+        '.aj-gd-detail>*:nth-child(5){transition-delay:.4s}',
+        '.aj-gd-detail>*:nth-child(6){transition-delay:.5s}',
+        '.aj-gd-detail>*:nth-child(7){transition-delay:.65s}',
+        '@media (max-width:1023px){.aj-gd-detail{padding-top:24px}',
+        '  .aj-gd-back,.aj-gd-kicker,.aj-gd-head,.aj-gd-body,.aj-gd-stats,.aj-gd-ctarow,.aj-gd-ai-head{margin-left:16px;margin-right:16px}',
+        '  .aj-gd-back{width:calc(100% - 32px)}',
+        '  .aj-gd-head{font-size:26px}',
+        '  .aj-gd-ai-card{padding:20px 16px 16px}}',
+        '@media (prefers-reduced-motion: reduce){.aj-gd-detail>*{transition:none;opacity:1;transform:none}.aj-gd-ai-txt.typing::after{animation:none}}'
       ].join('\n');
       document.head.appendChild(s);
     })();
 
     function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    /* generative-AI streaming: the summary types itself out word by word with a
+       blinking caret, then the attribution row fades in */
+    var typeTimer = null;
+    function streamInto(el, meta, text) {
+      clearInterval(typeTimer);
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { el.textContent = text; meta.classList.add('on'); return; }
+      var words = text.split(' '), i = 0;
+      el.textContent = '';
+      el.classList.add('typing');
+      typeTimer = setInterval(function () {
+        el.textContent += (i ? ' ' : '') + words[i];
+        if (++i >= words.length) {
+          clearInterval(typeTimer);
+          el.classList.remove('typing');
+          meta.classList.add('on');
+        }
+      }, 46);
+    }
+
     function openDetail(e) {
       inDetail = true;
       focusOn(e);
@@ -545,13 +616,35 @@
         '<button type="button" class="aj-gd-back">← Back to the world</button>' +
         '<div class="aj-gd-kicker" style="--c:' + e.color + '"><span class="dot"></span><span style="color:' + e.color + '">' + esc(e.cat || 'News') + '</span>' + liveHtml + '<span class="reg">· ' + esc(e.region || 'World') + '</span></div>' +
         '<h2 class="aj-gd-head">' + esc(e.headline) + '</h2>' +
-        '<div class="aj-gd-sum"><b>✦</b>' + esc(e.summary) + '</div>' +
-        '<div class="aj-gd-summeta">✦ AI “right now” summary · grounded in the live blog · editor-reviewed</div>' +
-        '<div class="aj-gd-stats"><div><b>' + (e.live ? 'LIVE' : 'NEW') + '</b><span>Status</span></div><div><b>' + esc(e.region || 'World') + '</b><span>Region</span></div><div><b>3</b><span>AJ sources</span></div></div>' +
-        '<div class="aj-gd-ctarow"><a class="aj-gd-cta" href="aljazeera-article.html">Open the coverage →</a><span class="aj-gd-upd">Updated live now</span></div>';
+        '<p class="aj-gd-body">' + esc(e.summary) + '</p>' +
+        '<div class="aj-gd-stats">' +
+          '<div><span>Status</span><b>' + (e.live ? 'Live' : 'New') + '</b></div>' +
+          '<div><span>Region</span><b>' + esc(e.region || 'World') + '</b></div>' +
+          '<div><span>AJ sources</span><b>03</b></div>' +
+        '</div>' +
+        '<div class="aj-gd-ctarow"><a class="aj-gd-cta" href="aljazeera-article.html">Open the coverage <span aria-hidden="true">›</span></a><span class="aj-gd-upd">Updated live now</span></div>' +
+        '<div class="aj-gd-ai">' +
+          '<div class="aj-gd-ai-card"><span class="spark aura-orb" style="--size:26px" aria-hidden="true"><span class="aura-orb__blobs"><span class="aura-orb__spin"><i></i><i></i><i></i><i></i><i></i></span></span></span><div class="aj-gd-ai-col">' +
+            '<p class="aj-gd-ai-txt"></p>' +
+            '<div class="aj-gd-ai-meta"><span class="tag">✦ AI “right now” summary</span><span class="ok">' +
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="m344-60-76-128-144-32 14-148-98-112 98-112-14-148 144-32 76-128 136 58 136-58 76 128 144 32-14 148 98 112-98 112 14 148-144 32-76 128-136-58-136 58Zm94-278 226-226-56-58-170 170-86-84-56 56 142 142Z"/></svg>' +
+              'Editor Reviewed</span></div>' +
+          '</div></div>' +
+        '</div>';
       detail.querySelector('.aj-gd-back').addEventListener('click', closeDetail);
       rightPanel.classList.add('aj-globe-detailing');
       detail.scrollTop = 0;
+
+      /* lazy-load entrance: content starts hidden, then rises in staggered */
+      detail.classList.remove('is-in');
+      void detail.offsetWidth;
+      requestAnimationFrame(function () { detail.classList.add('is-in'); });
+
+      /* the AI stream begins once its card has risen into place */
+      var txtEl = detail.querySelector('.aj-gd-ai-txt');
+      var metaEl = detail.querySelector('.aj-gd-ai-meta');
+      txtEl.classList.add('typing');
+      setTimeout(function () { streamInto(txtEl, metaEl, e.summary); }, 900);
     }
     function closeDetail() { inDetail = false; rightPanel.classList.remove('aj-globe-detailing'); reset(); }
 

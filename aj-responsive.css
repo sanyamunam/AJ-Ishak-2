@@ -19,6 +19,7 @@
 /* menu-panel slot for the theme toggle + language selector; empty on desktop
    (aj-mobile-nav.js returns them to their header slots above 1023px) */
 .aj-nav-extras { display: none; }
+.aj-nav-account { display: none; }
 
 /* ------------------------------------------------------------------ */
 /* TABLET + MOBILE (everything below 1024px)                           */
@@ -105,24 +106,266 @@
   main [class*="h-[56px]"].flex,
   main [class*="h-[60px]"].flex { height: auto !important; min-height: 43px; }
   main .flex[class~="size-full"] { flex-wrap: wrap; height: auto; min-height: 100%; }
+  /* SHARE | LISTEN | Summarize toolbar: stays a single scrollable line instead
+     of wrapping, so the row height doesn't balloon on narrow viewports */
+  main .flex[class~="size-full"]:has(.aj-summarize) {
+    flex-wrap: nowrap !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  main .flex[class~="size-full"]:has(.aj-summarize)::-webkit-scrollbar { display: none; }
   main div[class~="h-full"][class~="shrink-0"] {
     flex-shrink: 1;
     min-width: 0;
     max-width: 100%;
   }
 
-  /* CONTINUE LISTENING disc row becomes a swipeable strip */
+  /* CONTINUE LISTENING disc row becomes a swipeable strip — it must stay a
+     row (the fluid-column stacker below would otherwise pile the cards up) */
   main div[class~="min-h-px"][class*="gap-[24px]"][class~="items-center"] {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
   }
+  main div[class~="min-h-px"][class*="gap-[24px]"][class~="items-center"] > div {
+    flex: none !important;
+    height: auto !important;
+  }
+  /* the artwork disc keeps a 1:1 ratio — a perfect circle — instead of
+     flexing its height independently of its width */
+  main div[class*="w-[200px]"][class*="rounded-[200px]"],
+  main div[class*="w-[200px]"][class*="rounded-[320px]"] {
+    flex: none !important;
+    width: clamp(140px, 42vw, 200px) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* live timeline (dot + time + headline): the gutter and the headline stay
+     side by side, the headline wraps in place, and the connector segments get
+     their stretchy 0% basis back so the line runs unbroken through the dots */
+  main div[class~="w-full"][class*="gap-[14px]"] {
+    flex-wrap: nowrap !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > a {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-block: 8px;
+  }
+  /* the export draws the connector as stretchy segment divs whose quadruple
+     nesting collapses once rows wrap; hide them and draw one unbroken line
+     through the dot centres with a pseudo-element on the stretched gutter */
+  main div[class~="w-full"][class*="gap-[14px]"] [class*="flex-[1_0_0]"][class~="w-px"] {
+    display: none;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child {
+    align-self: stretch;
+    position: relative;
+    flex: none !important;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child::before {
+    content: "";
+    position: absolute;
+    left: 2.5px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #dfdfdf;
+  }
+  /* the live-match commentary rows (64' red card / 50' chance) get the same
+     timeline treatment: pinned gutter, drawn connector line, tidy spacing */
+  main div[class~="size-full"][class*="gap-[14px]"] {
+    flex-wrap: nowrap !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > p {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-block: 8px;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] [class*="flex-[1_0_0]"][class~="w-px"] {
+    display: none;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child {
+    align-self: stretch;
+    position: relative;
+    flex: none !important;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #dfdfdf;
+  }
+  /* the DOM dot rides the collapsed segment column and floats off-centre;
+     draw it on the gutter instead, keeping the live-red state */
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child [class*="size-[5px]"] {
+    display: none;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    background: #dfdfdf;
+    z-index: 1;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class*="size-[5px]"][class*="bg-[#ff435f]"])::after {
+    background: #ff435f;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:first-child)::before {
+    top: 50%;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:last-child)::before {
+    bottom: 50%;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] div[class~="h-full"][class~="shrink-0"] {
+    flex-shrink: 0 !important;
+    min-width: 5px !important;
+  }
+
+  /* GOLDENBOOT RACE rows: the desktop 64px column gap shrinks, and the score
+     cell yields its half-row share so the name cell gets the free width */
+  main div[class*="h-[56px]"][class*="gap-[64px]"] { gap: 12px !important; }
+  main div[class*="h-[56px]"][class*="gap-[64px]"] > [class*="flex-[1_0_0]"]:last-child {
+    flex: none !important;
+  }
+  main div[class*="h-[56px]"][class*="gap-[64px]"] > [class*="flex-[1_0_0]"]:first-child {
+    flex: 1 1 auto !important;
+  }
+
+  /* GOLDENBOOT RACE rows: the player name takes all the free width on one
+     line (ellipsis only as a last resort) instead of wrapping over the
+     country label */
+  main div.flex:has(> div[class*="w-[71px]"]) { flex-wrap: nowrap !important; }
+  main div.flex > div[class*="w-[71px]"][class*="h-[56px]"] { width: 54px !important; }
+  main div.flex:has(> div[class*="w-[71px]"]) > p {
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: none;
+  }
+  main div.flex:has(> div[class*="w-[71px]"]) > div[class*="w-[71px]"] + p {
+    flex: 1 1 auto;
+  }
+
+  /* each entry's wrapper pulls the next one up 24px — a desktop overlap trick
+     that collides wrapped mobile text */
+  main div[class*="mb-[-24px]"] { margin-bottom: 0 !important; }
+
+  /* the byline bar (avatar + author + timestamp) is noise on phones */
+  main div[class*="border-"]:has(> div[class~="size-full"][class*="pr-[33px]"]) {
+    display: none !important;
+  }
+
+  /* the generic h-full/shrink-0 squeeze rule must not crush the 6px dot
+     column, or the time label slides under the dot */
+  main div[class~="w-full"][class*="gap-[14px]"] div[class~="h-full"][class~="shrink-0"] {
+    flex-shrink: 0 !important;
+    min-width: 6px !important;
+  }
+
+  /* the design blanks the segment above the first dot and below the last one
+     (opacity-0) — the drawn line honours the same ends */
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:first-child)::before {
+    top: 50%;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:last-child)::before {
+    bottom: 50%;
+  }
+
+  /* OPINIONS: when the quote column and its photo stack, the desktop 64px
+     column gap reads as a disconnect — tighten it so the image belongs to
+     the quote above */
+  main div[class~="aj-op-hot"] { gap: 16px !important; }
 
   /* long headlines may no longer fit on one line */
   main .whitespace-nowrap, footer .whitespace-nowrap { white-space: normal; }
   header nav .whitespace-nowrap { white-space: nowrap; }
 
   /* footer link columns stack like the main content */
+  /* no footer on mobile */
+  footer, #aj-chrome-footer { display: none !important; }
+
+  /* account dashboard: height:100% cards equalise columns on desktop; in a
+     single stacked column they overflow their section onto the next heading */
+  #dc-root section > div[style*="height: 100%"] { height: auto !important; }
+
+  /* Sign out relocates to the bottom of the account dashboard (aj-chrome.js)
+     and reads as a destructive action */
+  #dc-root a.aj-signout-bottom {
+    width: 100%;
+    justify-content: center;
+    color: #ff435f !important;
+    font-weight: 600;
+    border-top: 1px solid #e7e7eb;
+    margin-top: 8px !important;
+    padding: 16px 12px !important;
+  }
+  #dc-root a.aj-signout-bottom svg { stroke: #ff435f; }
+
+  /* the badge tile fills the card width once it stacks above READING STREAK;
+     its desktop column divider becomes a row divider */
+  #dc-root section > div[style*="flex: 1 1 240px"] {
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e7e7eb;
+  }
+
+  /* the account sidebar nav becomes a horizontal tab strip; the selected tab
+     (Dashboard) trades its desktop left-edge bar for an underline */
+  #dc-root aside[style*="max-width"] { max-width: 100% !important; }
+  #dc-root nav[aria-label="Account"] ul[data-sidebar-nav] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid #e7e7eb;
+  }
+  #dc-root nav[aria-label="Account"] li { flex: none; }
+  #dc-root nav[aria-label="Account"] a {
+    white-space: nowrap;
+    gap: 8px !important;
+    padding: 11px 10px !important;
+    border-bottom: 2px solid transparent !important;
+  }
+  #dc-root nav[aria-label="Account"] a[aria-current="page"] {
+    border-left: 0 !important;
+    border-bottom: 2px solid #101010 !important;
+  }
+
+  /* the stat tiles (read time / +23% / streak / articles) become a horizontal
+     swipe strip — each card takes ~60% of the width so the peeking next card
+     signals there's more to scroll */
+  #dc-root section > div[style*="minmax(200px"] {
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  #dc-root section > div[style*="minmax(200px"] > div {
+    flex: 0 0 60% !important;
+    scroll-snap-align: start;
+    padding: 20px 16px !important;
+  }
+
   footer .flex { flex-wrap: wrap; }
   footer [class*="flex-[1_0_0]"], footer [class~="flex-1"] { min-width: min(100%, 240px); }
 
@@ -190,9 +433,11 @@
   }
   header nav a:last-child { border-bottom: 0; }
 
-  /* the black top strip (date + weather) disappears on mobile once its theme
-     toggle has been relocated into the menu panel */
+  /* the black top strip (date + weather) and the white account strip
+     (Archives / Mindfull / Welcome) disappear on mobile once their controls
+     have been relocated into the menu panel */
   header.aj-mnav-moved > div:first-child { display: none; }
+  header.aj-mnav-moved > div.w-full.border-b { display: none; }
 
   /* brand logo rides beside the burger; auto margin pushes WATCH LIVE right */
   header .aj-nav-row a[data-aj-mnav-brand] {
@@ -222,9 +467,10 @@
     font-size: 12px !important;
   }
 
-  /* theme toggle + language selector inside the menu panel */
+  /* account row + theme toggle + language selector inside the menu panel */
   header nav .aj-nav-extras {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
@@ -233,6 +479,21 @@
     border-top: 1px solid #f0f0f3;
   }
   header nav .aj-nav-extras > div { background: #2d2c2c; }
+  /* account row rides on top of the menu, above the nav links */
+  header nav .aj-nav-account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 4px 8px 8px;
+    border-bottom: 1px solid #f0f0f3;
+    margin-bottom: 4px;
+  }
+  header nav .aj-nav-account a {
+    min-height: 44px;
+    border: 0 !important;
+    padding: 0 !important;
+  }
   header nav .aj-nav-extras a {
     border-left: 0 !important;
     border-bottom: 0 !important;
@@ -254,7 +515,26 @@
      "Press / to ask" affordance is keyboard-only, meaningless on touch */
   header .aj-ask-gradient > div { gap: 8px; }
   header .aj-ask-gradient > div > div:first-child { flex: 1 1 auto; min-width: 0; }
-  header .aj-ask-gradient [class*="w-[238px]"] { flex: 1 1 auto; min-width: 0; width: auto !important; }
+  /* the rotating suggestion quote is noise at phone width */
+  header .aj-ask-gradient [class*="w-[238px]"] { display: none !important; }
+  /* "Press / to ask" is keyboard-only; it becomes a plain Ask button (the
+     whole bar is already click-to-open, so it needs no wiring of its own) */
+  header .aj-ask-gradient > div > div:last-child {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: #101010 !important;
+    padding: 10px 24px !important;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  header .aj-ask-gradient > div > div:last-child * { display: none !important; }
+  header .aj-ask-gradient > div > div:last-child::after {
+    content: "Ask";
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
 
   /* --- main column ------------------------------------------------------ */
   main { gap: 56px !important; padding-top: 40px !important; }
@@ -445,13 +725,43 @@
 
   main { gap: 44px !important; padding-top: 28px !important; }
 
-  /* keyboard-shortcut hint has no meaning on touch screens */
-  header .aj-ask-gradient > div > div:last-child { display: none; }
 }
 
 /* ------------------------------------------------------------------ */
 /* Reduced motion                                                      */
 /* ------------------------------------------------------------------ */
+/* Summarize button — one shared component, all viewports: soft gradient wash
+   on hover while the spark icon does an eased full turn. */
+.aj-summarize { transition: background .25s ease; }
+.aj-summarize:hover { background: linear-gradient(120deg, #f4effc, #e3d9f7); }
+.aj-summarize img {
+  transition: transform .55s cubic-bezier(.22, .61, .36, 1);
+  mix-blend-mode: multiply;
+}
+.aj-summarize:hover img { transform: rotate(360deg); }
+
+/* the masked-gradient variant of the spark icon (mask-image on a stack of
+   divs instead of a plain <img>) has no single element the mask-composited
+   shape lives on, so the img-only rule above spins the underlying gradient
+   texture, not the visible sparkle silhouette — rotate the icon's outer
+   wrapper instead so the whole mark turns as one piece */
+.aj-summarize > div:first-child {
+  transition: transform .55s cubic-bezier(.22, .61, .36, 1);
+}
+.aj-summarize:hover > div:first-child { transform: rotate(360deg); }
+
+/* The sticky-rail sparkle ("compiled from AJ's archive") spins with the same
+   eased loop as the Ask Al Jazeera title spark — all viewports. */
+@keyframes ajSparkSpin {
+  0% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
+  23% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+main [class~="sticky"] img[class~="size-[15px]"] {
+  animation: ajSparkSpin 2.4s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .aj-nav-burger span { transition: none; }
+  main [class~="sticky"] img[class~="size-[15px]"] { animation: none; }
 }

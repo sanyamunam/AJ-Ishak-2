@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var CSS_FILES = ['aj-shared.css', 'aj-fonts.css', 'aj-chrome.css', 'aj-responsive.css'];
+  var CSS_FILES = ['aj-shared.css', 'aj-fonts.css', 'aj-chrome.css', 'aj-responsive.css', 'aj-aura-orb.css'];
   var HEADER_URL = 'aj-header.html';
   var FOOTER_URL = 'aj-footer.html';
 
@@ -31,6 +31,49 @@
       'body,#dc-root,#dc-root > .sc-host,#dc-root > .sc-host > div{background:#fff!important}' +
       '#dc-root [data-body-row]{background:transparent!important}';
     document.head.appendChild(st);
+  }
+
+  /* The account bundle hardcodes 'Space Grotesk' in its inline styles; the rest
+     of the site is set in Anybody, so re-font the dashboard to match. Scoped to
+     #dc-root — the injected header/footer live outside it and keep their own mix. */
+  function anybodyFont() {
+    if (document.getElementById('aj-chrome-font')) return;
+    var st = document.createElement('style');
+    st.id = 'aj-chrome-font';
+    st.textContent =
+      "#dc-root, #dc-root *{font-family:'Anybody',sans-serif!important}" +
+      /* profile avatar: no drop shadow, and it overlaps the gradient banner */
+      '#dc-root span[data-dc-tpl="54"]{box-shadow:none!important}' +
+      '#dc-root div[data-dc-tpl="51"]{margin-top:-42px!important}';
+    document.head.appendChild(st);
+  }
+
+  /* On mobile the account nav is a horizontal tab strip; Sign out leaves it and
+     drops to the bottom of the dashboard as a red full-width action. Moved, not
+     cloned, and returned to its sidebar slot when the viewport grows again. */
+  function placeSignout() {
+    var link = [].filter.call(
+      document.querySelectorAll('#dc-root nav[aria-label="Account"] a, #dc-root a.aj-signout-bottom'),
+      function (a) { return /Sign out/i.test(a.textContent || ''); }
+    )[0];
+    if (!link || link.hasAttribute('data-aj-signout')) return;
+    var main = document.querySelector('#dc-root main');
+    if (!main || !main.parentElement) return;
+    link.setAttribute('data-aj-signout', '1');
+    var home = { parent: link.parentElement, next: link.nextSibling };
+    var mq = window.matchMedia('(max-width: 1023px)');
+    function place() {
+      if (mq.matches) {
+        main.parentElement.appendChild(link);
+        link.classList.add('aj-signout-bottom');
+      } else {
+        home.parent.insertBefore(link, home.next);
+        link.classList.remove('aj-signout-bottom');
+      }
+    }
+    place();
+    if (mq.addEventListener) mq.addEventListener('change', place);
+    else mq.addListener(place);
   }
 
   /* Host bundles set a bare `a{color:...}` that bleeds into the injected chrome and
@@ -130,7 +173,7 @@
     ensureCss();
     ensureViewport();
     scopeLinkColours();
-    if (/account/i.test(location.pathname)) whiteBackground();
+    if (/account/i.test(location.pathname)) { whiteBackground(); anybodyFont(); }
 
     var needHeader = !hasRealHeader();
     var needFooter = !hasRealFooter();
@@ -149,7 +192,7 @@
         stripBundleChrome(sel);
         ensureCss();          // bundle boot may have wiped the injected links
         ensureViewport();
-        if (isAccount) { dropDuplicateStrip(); dropTicker(); }
+        if (isAccount) { dropDuplicateStrip(); dropTicker(); anybodyFont(); placeSignout(); }
         if (++n > 20) clearInterval(iv);
       }, 250);
     });

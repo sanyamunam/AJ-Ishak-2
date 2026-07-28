@@ -60,10 +60,23 @@
     var lang = [].filter.call(header.querySelectorAll('a'), function (a) {
       return a.querySelector('img[alt="العربية"]');
     })[0];
+    var welcome = [].filter.call(header.querySelectorAll('a'), function (a) {
+      return /Welcome,/.test(a.textContent || '');
+    })[0];
+    var signin = header.querySelector('a.aj-signin');
 
     var extras = document.createElement('div');
     extras.className = 'aj-nav-extras';
     nav.appendChild(extras);
+
+    /* avatar + "Welcome, Guest" + Sign in share one full-width row pinned
+       to the top of the menu, above the nav links */
+    var account = null;
+    if (welcome || signin) {
+      account = document.createElement('div');
+      account.className = 'aj-nav-account';
+      nav.insertBefore(account, nav.firstChild);
+    }
 
     /* the brand logo sits beside the burger on mobile */
     var brandImg = header.querySelector('a img[alt="Al Jazeera"]');
@@ -74,6 +87,8 @@
     function rememberHome(el, put) {
       homes.push({ el: el, parent: el.parentElement, next: el.nextSibling, put: put });
     }
+    if (welcome) rememberHome(welcome, function (el) { account.appendChild(el); });
+    if (signin) rememberHome(signin, function (el) { account.appendChild(el); });
     if (theme) rememberHome(theme, function (el) { extras.appendChild(el); });
     if (lang) rememberHome(lang, function (el) { extras.appendChild(el); });
     if (brand) rememberHome(brand, function (el) { btn.insertAdjacentElement('afterend', el); });

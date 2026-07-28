@@ -55,8 +55,8 @@
     '@keyframes ajAskSpark{0%{transform:rotate(0deg);animation-timing-function:cubic-bezier(.22,.61,.36,1)}23%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}',
     '@media (prefers-reduced-motion: reduce){.aj-ask-spark{animation:none}}',
     '.aj-ask-sub{margin:8px 0 0;font-size:14px;line-height:1.5;color:rgba(32,32,32,.62)}',
-    '.aj-ask-min{flex:none;display:inline-flex;align-items:center;height:33px;padding:0 16px;background:#fff;border:0;cursor:pointer;font:13px/1 inherit;color:#202020;box-shadow:0 7px 10px rgba(0,0,0,.12)}',
-    '.aj-ask-min b{font-weight:600}',
+    '.aj-ask-close{position:absolute;top:16px;right:16px;z-index:6;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#fff;border:0;border-radius:50%;cursor:pointer;font:20px/1 inherit;color:#202020;box-shadow:0 7px 10px rgba(0,0,0,.12);transition:background .2s ease}',
+    '.aj-ask-close:hover{background:#f3f3f6}',
 
     '.aj-ask-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:22px 72px 8px;scrollbar-width:thin;scrollbar-color:rgba(17,17,24,.22) transparent}',
     '.aj-ask-body::-webkit-scrollbar{width:6px}',
@@ -66,10 +66,8 @@
     '.aj-q{display:flex;justify-content:flex-end;margin:0 0 28px}',
     '.aj-q span{background:#202020;color:#fff;font-size:15px;line-height:1.4;padding:13px 20px;max-width:620px}',
     '.aj-a{display:flex;gap:14px;margin:0 0 34px;align-items:flex-start}',
-    '.aj-a-orb{flex:none;width:26px;height:26px;position:relative;border-radius:50%;filter:blur(.4px);margin-top:2px}',
-    '.aj-a-orb::before,.aj-a-orb::after{content:"";position:absolute;inset:0;border-radius:50%}',
-    '.aj-a-orb::before{background:rgba(255,255,255,.7)}',
-    '.aj-a-orb::after{background:linear-gradient(180deg,#335ee0,#ff94df);mix-blend-mode:color}',
+    /* the orb itself is the shared .aura-orb component (aj-aura-orb.css) */
+    '.aj-a-orb{flex:none;margin-top:2px}',
     '.aj-a-col{flex:1 1 auto;min-width:0;max-width:820px}',
 
     '.aj-in{opacity:0;transform:translateY(10px);transition:opacity .45s ease,transform .45s cubic-bezier(.22,.61,.36,1)}',
@@ -108,7 +106,7 @@
     /* ---- live card ---- */
     '.aj-live{display:flex;border:1px solid rgba(17,17,24,.12);background:#fff;margin:0 0 22px;overflow:hidden;cursor:pointer;transition:box-shadow .25s ease}',
     '.aj-live:hover{box-shadow:0 8px 22px rgba(31,35,84,.10)}',
-    '.aj-live-media{position:relative;width:200px;min-height:220px;flex:none;overflow:hidden;background:#20242c}',
+    '.aj-live-media{position:relative;width:200px;min-height:140px;flex:none;overflow:hidden;background:#20242c}',
     '.aj-live-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s cubic-bezier(.22,.61,.36,1)}',
     '.aj-live:hover .aj-live-media img{transform:scale(1.05)}',
     '.aj-live-badge{position:absolute;left:12px;top:12px;background:#f5334f;color:#fff;font-size:10.5px;font-weight:700;letter-spacing:1px;padding:4px 9px;z-index:2}',
@@ -152,14 +150,30 @@
     '.aj-ask-chip:hover{background:#fff;transform:translateY(-1px)}',
     '.aj-ask-chip i{font-style:normal;color:#7c5cf0;font-size:12px}',
     '.aj-ask-form{display:flex;align-items:center;gap:12px;background:#fff;padding:14px 18px;flex:none;box-shadow:0 10px 24px rgba(31,35,84,.10)}',
-    '.aj-ask-orb{position:relative;display:block;width:26px;height:26px;flex:none;border-radius:50%;filter:blur(.4px)}',
-    '.aj-ask-orb::before,.aj-ask-orb::after{content:"";position:absolute;inset:0;border-radius:50%}',
-    '.aj-ask-orb::before{background:rgba(255,255,255,.7)}',
-    '.aj-ask-orb::after{background:linear-gradient(180deg,#335ee0,#ff94df);mix-blend-mode:color}',
+    '.aj-ask-orb{flex:none}',
     '.aj-ask-field{flex:1 1 auto;border:0;outline:0;background:none;font:15px/1.4 inherit;color:#202020;min-width:0}',
     '.aj-ask-field::placeholder{color:rgba(32,32,32,.45)}',
 
     '@media (max-width:1100px){.aj-pair{grid-template-columns:1fr}.aj-live-media{width:170px}}',
+
+    /* ---- mobile: the desktop panel breathes in 56-72px steps; the phone
+       layout gets its own compact rhythm instead of inheriting them ---- */
+    '@media (max-width:1023px){',
+    '.aj-ask-inner{padding:14px 16px 10px}',
+    '.aj-ask-head{gap:12px}',
+    '.aj-ask-title{font-size:21px;letter-spacing:-.2px;padding-right:44px}',
+    '.aj-ask-spark{width:16px;height:16px;margin-right:6px}',
+    '.aj-ask-sub{margin-top:6px;font-size:13px}',
+    '.aj-ask-close{top:10px;right:12px;width:36px;height:36px;font-size:17px}',
+    '.aj-ask-body{padding:12px 0 6px}',
+    '.aj-q{margin:0 0 16px}',
+    '.aj-q span{max-width:85%;padding:10px 14px;font-size:14px}',
+    '.aj-a{gap:10px;margin:0 0 22px}',
+    '.aj-ask-chips{gap:8px;padding:10px 0}',
+    '.aj-ask-chip{padding:9px 12px;font-size:12px;gap:6px}',
+    '.aj-ask-form{padding:10px 12px;gap:10px}',
+    '.aj-ask-field{font-size:14px}',
+    '}',
     '@media (prefers-reduced-motion: reduce){.aj-ask-panel,.aj-in,.aj-q span{transition:none}.aj-ask-panel,.aj-dots i,.aj-status .pip,.aj-caret{animation:none}}'
   ].join('\n');
 
@@ -249,14 +263,14 @@
             '<h2 class="aj-ask-title"><img class="aj-ask-spark" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%233b6ff5%22%2F%3E%3Cstop%20offset%3D%2250%25%22%20stop-color%3D%22%238b5cf6%22%2F%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23f472b6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url%28%23g%29%22%20d%3D%22M12%200c0%206.63%205.37%2012%2012%2012-6.63%200-12%205.37-12%2012%200-6.63-5.37-12-12-12%206.63%200%2012-5.37%2012-12z%22%2F%3E%3C%2Fsvg%3E">Hi there! I’m <span>Al Jazeera AI</span></h2>' +
             '<p class="aj-ask-sub">Ask anything about the news. Answers come only from Al Jazeera reporting, with links.</p>' +
           '</div>' +
-          '<button type="button" class="aj-ask-min"><b>Press /</b> to minimize</button>' +
+          '<button type="button" class="aj-ask-close" aria-label="Close chat">✕</button>' +
         '</div>' +
         '<div class="aj-ask-body" aria-live="polite"></div>' +
         '<div class="aj-ask-chips">' +
           SUGGESTIONS.map(function (s) { return '<button type="button" class="aj-ask-chip"><i>✦</i>' + s + '</button>'; }).join('') +
         '</div>' +
         '<form class="aj-ask-form">' +
-          '<span class="aj-ask-orb"></span>' +
+          '<span class="aj-ask-orb aura-orb" style="--size:26px" aria-hidden="true"><span class="aura-orb__blobs"><span class="aura-orb__spin"><i></i><i></i><i></i><i></i><i></i></span></span></span>' +
           '<input class="aj-ask-field" type="text" placeholder="' + PLACEHOLDER + '" aria-label="Ask a question">' +
         '</form>' +
       '</div>';
@@ -339,7 +353,7 @@
       if (b.kind === 'live') {
         var thumb = pickThumb();
         return el('aj-live aj-in',
-          '<div class="aj-live-media"><span class="aj-live-badge">LIVE</span>' +
+          '<div class="aj-live-media"><img src="aj-live-thumb.jpg" alt=""><span class="aj-live-badge">LIVE</span>' +
           (thumb ? '<img alt="" src="' + thumb + '">' : '') + '</div>' +
           '<div class="aj-live-txt"><h4>' + b.title + '</h4>' +
           '<p class="aj-live-body">' + b.body + '</p>' +
@@ -372,7 +386,7 @@
     }
 
     function answerShell() {
-      var a = el('aj-a', '<span class="aj-a-orb"></span><div class="aj-a-col"></div>');
+      var a = el('aj-a', '<span class="aj-a-orb aura-orb" style="--size:26px" aria-hidden="true"><span class="aura-orb__blobs"><span class="aura-orb__spin"><i></i><i></i><i></i><i></i><i></i></span></span></span><div class="aj-a-col"></div>');
       body.appendChild(a); toBottom();
       return a.querySelector('.aj-a-col');
     }
@@ -524,7 +538,7 @@
     }
 
     bar.addEventListener('click', function () { setOpen(true); });
-    panel.querySelector('.aj-ask-min').addEventListener('click', function () { setOpen(false); });
+    panel.querySelector('.aj-ask-close').addEventListener('click', function () { setOpen(false); });
     panel.querySelector('.aj-ask-form').addEventListener('submit', function (e) { e.preventDefault(); ask(field.value); });
     [].slice.call(panel.querySelectorAll('.aj-ask-chip')).forEach(function (c) {
       c.addEventListener('click', function () { ask(c.textContent.replace(/^✦\s*/, '')); });
