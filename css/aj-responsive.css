@@ -298,9 +298,10 @@
   main .whitespace-nowrap, footer .whitespace-nowrap { white-space: normal; }
   header nav .whitespace-nowrap { white-space: nowrap; }
 
-  /* footer link columns stack like the main content */
-  /* no footer on mobile */
-  footer, #aj-chrome-footer { display: none !important; }
+  /* footer link columns stack like the main content (wrap rules below).
+     Only the account dashboard still hides it: that page's fixed-height
+     absolute layout would overlap the footer instead of flowing around it. */
+  .aj-account-page footer, .aj-account-page #aj-chrome-footer { display: none !important; }
 
   /* account dashboard: height:100% cards equalise columns on desktop; in a
      single stacked column they overflow their section onto the next heading */

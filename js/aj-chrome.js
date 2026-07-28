@@ -173,7 +173,12 @@
     ensureCss();
     ensureViewport();
     scopeLinkColours();
-    if (/account/i.test(location.pathname)) { whiteBackground(); anybodyFont(); }
+    if (/account/i.test(location.pathname)) {
+      whiteBackground(); anybodyFont();
+      // the dashboard's fixed-height absolute layout can't reflow around the
+      // footer on narrow viewports; aj-responsive.css hides it via this hook
+      document.documentElement.classList.add('aj-account-page');
+    }
 
     var needHeader = !hasRealHeader();
     var needFooter = !hasRealFooter();
