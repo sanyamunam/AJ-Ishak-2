@@ -115,33 +115,33 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
   color: var(--fy-muted);
 }
 
-/* pill pair: LISTEN + AI BRIEF — same bordered toolbar pattern as the
-   article page's SHARE | LISTEN | Summarize bar (border-y + vertical
-   dividers, not a boxed pill) */
-.fy-pills {
+/* greeting toolbar: LISTEN | Summarize — same component as the article
+   page's Up Next drawer toolbar (aj-upnext.js injects these styles there;
+   this page carries its own copy since the drawer script isn't loaded) */
+.fy .aj-upnext__tools {
   display: flex;
   align-items: stretch;
   flex: none;
-  height: 43px;
-  border-top: 1px solid #dfdfdf;
-  border-bottom: 1px solid #dfdfdf;
+  border: 1px solid #dfdfdf;
 }
 
-.fy-pill {
+.fy .aj-upnext__tool {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 12px 22px;
+  padding: 12px 16px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-family: 'Anybody', Arial, sans-serif;
   font-size: 14px;
   letter-spacing: -0.04em;
   color: #575757;
   white-space: nowrap;
-  cursor: pointer;
 }
 
-.fy-pill + .fy-pill { border-left: 1px solid #dfdfdf; }
-.fy-pill--brief { padding-right: 8px; }
-.fy-pill__spark { width: 15px; height: 15px; flex: none; }
+.fy .aj-upnext__tool + .aj-upnext__tool { border-left: 1px solid #dfdfdf; }
+.fy .aj-upnext__tool svg { width: 16px; height: 16px; flex: none; }
 
 /* ---------- stories rail ---------- */
 
