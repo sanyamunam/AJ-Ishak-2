@@ -1,0 +1,767 @@
+/* ============================================================================
+   AJ RESPONSIVE — mobile + tablet adaptation for the Al Jazeera prototype.
+   Desktop (>=1024px) keeps the original fixed 1440px design untouched: every
+   rule below is scoped inside max-width media queries.
+
+   Breakpoints:
+     mobile  : 320–767px   (stacked layout + mobile typography)
+     tablet  : 768–1023px  (stacked layout at desktop type scale)
+     desktop : 1024px+     (no rules here)
+
+   The markup is a Tailwind v4 export built from fixed-width bracket utilities
+   (.w-[463px] etc.), all emitted inside @layer utilities — so un-layered rules
+   in this file win the cascade; !important is only used to beat inline styles
+   or higher-specificity page rules.
+   ========================================================================== */
+
+/* burger is part of the DOM on all widths but only shown on small screens */
+.aj-nav-burger { display: none; }
+/* menu-panel slot for the theme toggle + language selector; empty on desktop
+   (js/aj-mobile-nav.js returns them to their header slots above 1023px) */
+.aj-nav-extras { display: none; }
+.aj-nav-account { display: none; }
+
+/* ------------------------------------------------------------------ */
+/* TABLET + MOBILE (everything below 1024px)                           */
+/* ------------------------------------------------------------------ */
+@media (max-width: 1023px) {
+
+  /* the desktop pages render at zoom .9 (inline style) — real devices don't */
+  body { zoom: 1 !important; }
+
+  /* hard guard against stray horizontal scroll while sections adapt */
+  html, body { overflow-x: hidden !important; }
+
+  /* media never wider than its container; fixed-box cover images keep their
+     own absolute-fill sizing so aspect ratios stay undistorted */
+  img, video, canvas, iframe { max-width: 100%; }
+  svg { max-width: 100%; height: auto; }
+  img[class*="max-w-none"] { max-width: none; } /* Figma cover crops opt out */
+
+  /* every page-width cap becomes the viewport */
+  [class*="max-w-["] { max-width: 100% !important; }
+
+  /* --- large fixed widths become fluid --------------------------------- */
+  .w-\[1440px\], .w-\[1199px\], .w-\[1177px\],
+  .w-\[881px\], .w-\[867px\], .w-\[811\.391px\], .w-\[770px\], .w-\[768px\],
+  .w-\[760px\], .w-\[725px\], .w-\[720px\],
+  .w-\[655\.676px\], .w-\[645\.73px\], .w-\[596\.906px\],
+  .w-\[568px\], .w-\[560px\],
+  .w-\[466px\], .w-\[463px\], .w-\[462px\], .w-\[449px\], .w-\[442px\],
+  .w-\[437px\], .w-\[424px\], .w-\[420px\], .w-\[402px\], .w-\[401\.201px\],
+  .w-\[392px\], .w-\[360px\], .w-\[349\.667px\] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* mid-size fixed widths only get capped (icons/cards keep their size
+     unless they'd overflow the screen) */
+  .w-\[320px\], .w-\[318px\], .w-\[300px\], .w-\[292px\], .w-\[291\.242px\],
+  .w-\[240\.334px\], .w-\[240px\], .w-\[238px\] {
+    max-width: 100%;
+  }
+
+  /* oversized desktop gutters collapse to the mobile gutter */
+  .px-\[192px\], .px-\[120px\], .px-\[64px\], .px-\[56px\], .px-\[48px\] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .pr-\[100px\] { padding-right: 16px !important; }
+
+  /* sticky rails read as pinned columns on desktop only */
+  main .sticky, main [class*="sticky"] { position: static !important; }
+  main [class~="sticky"][class~="shrink-0"] {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* --- stacked layout ---------------------------------------------------- */
+
+  /* every flex row inside main may wrap — rows that must stay single-line
+     (scroll strips, the live-match strip) re-assert nowrap below */
+  main .flex { flex-wrap: wrap; }
+
+  /* fluid columns (flex-[1_0_0] / flex-1) can no longer sit side by side.
+     Their basis of 0 means flex-wrap alone never triggers, so (a) basis
+     becomes min-content — rows break on real content size, and the export's
+     paired min-w-px still lets flexbox shrink oversized items back down —
+     and (b) rows holding two or more fluid columns stack outright */
+  main [class*="flex-[1_0_0]"],
+  main [class~="flex-1"] { flex-basis: min-content; }
+  main .flex:has(> [class~="flex-1"] ~ [class~="flex-1"]),
+  main .flex:has(> [class*="flex-[1_0_0]"] ~ [class*="flex-[1_0_0]"]) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* column dividers make no sense once panels stack; [class~=] is an
+     exact-token match (a substring match would also hit min-w-px and
+     hide real content) */
+  main > section > div[class*="max-w-["] > div[class~="w-px"] { display: none; }
+
+  /* card toolbars (SHARE | LISTEN | Summarize) and byline bars wrap onto a
+     second line instead of clipping */
+  main [class*="h-[43px]"],
+  main [class*="h-[56px]"].flex,
+  main [class*="h-[60px]"].flex { height: auto !important; min-height: 43px; }
+  main .flex[class~="size-full"] { flex-wrap: wrap; height: auto; min-height: 100%; }
+  /* SHARE | LISTEN | Summarize toolbar: stays a single scrollable line instead
+     of wrapping, so the row height doesn't balloon on narrow viewports */
+  main .flex[class~="size-full"]:has(.aj-summarize) {
+    flex-wrap: nowrap !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  main .flex[class~="size-full"]:has(.aj-summarize)::-webkit-scrollbar { display: none; }
+  main div[class~="h-full"][class~="shrink-0"] {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* CONTINUE LISTENING disc row becomes a swipeable strip — it must stay a
+     row (the fluid-column stacker below would otherwise pile the cards up) */
+  main div[class~="min-h-px"][class*="gap-[24px]"][class~="items-center"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+  }
+  main div[class~="min-h-px"][class*="gap-[24px]"][class~="items-center"] > div {
+    flex: none !important;
+    height: auto !important;
+  }
+  /* the artwork disc keeps a 1:1 ratio — a perfect circle — instead of
+     flexing its height independently of its width */
+  main div[class*="w-[200px]"][class*="rounded-[200px]"],
+  main div[class*="w-[200px]"][class*="rounded-[320px]"] {
+    flex: none !important;
+    width: clamp(140px, 42vw, 200px) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  /* live timeline (dot + time + headline): the gutter and the headline stay
+     side by side, the headline wraps in place, and the connector segments get
+     their stretchy 0% basis back so the line runs unbroken through the dots */
+  main div[class~="w-full"][class*="gap-[14px]"] {
+    flex-wrap: nowrap !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > a {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-block: 8px;
+  }
+  /* the export draws the connector as stretchy segment divs whose quadruple
+     nesting collapses once rows wrap; hide them and draw one unbroken line
+     through the dot centres with a pseudo-element on the stretched gutter */
+  main div[class~="w-full"][class*="gap-[14px]"] [class*="flex-[1_0_0]"][class~="w-px"] {
+    display: none;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child {
+    align-self: stretch;
+    position: relative;
+    flex: none !important;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child::before {
+    content: "";
+    position: absolute;
+    left: 2.5px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #dfdfdf;
+  }
+  /* the live-match commentary rows (64' red card / 50' chance) get the same
+     timeline treatment: pinned gutter, drawn connector line, tidy spacing */
+  main div[class~="size-full"][class*="gap-[14px]"] {
+    flex-wrap: nowrap !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > p {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-block: 8px;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] [class*="flex-[1_0_0]"][class~="w-px"] {
+    display: none;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child {
+    align-self: stretch;
+    position: relative;
+    flex: none !important;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #dfdfdf;
+  }
+  /* the DOM dot rides the collapsed segment column and floats off-centre;
+     draw it on the gutter instead, keeping the live-red state */
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child [class*="size-[5px]"] {
+    display: none;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    background: #dfdfdf;
+    z-index: 1;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class*="size-[5px]"][class*="bg-[#ff435f]"])::after {
+    background: #ff435f;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:first-child)::before {
+    top: 50%;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:last-child)::before {
+    bottom: 50%;
+  }
+  main div[class~="size-full"][class*="gap-[14px]"] div[class~="h-full"][class~="shrink-0"] {
+    flex-shrink: 0 !important;
+    min-width: 5px !important;
+  }
+
+  /* GOLDENBOOT RACE rows: the desktop 64px column gap shrinks, and the score
+     cell yields its half-row share so the name cell gets the free width */
+  main div[class*="h-[56px]"][class*="gap-[64px]"] { gap: 12px !important; }
+  main div[class*="h-[56px]"][class*="gap-[64px]"] > [class*="flex-[1_0_0]"]:last-child {
+    flex: none !important;
+  }
+  main div[class*="h-[56px]"][class*="gap-[64px]"] > [class*="flex-[1_0_0]"]:first-child {
+    flex: 1 1 auto !important;
+  }
+
+  /* GOLDENBOOT RACE rows: the player name takes all the free width on one
+     line (ellipsis only as a last resort) instead of wrapping over the
+     country label */
+  main div.flex:has(> div[class*="w-[71px]"]) { flex-wrap: nowrap !important; }
+  main div.flex > div[class*="w-[71px]"][class*="h-[56px]"] { width: 54px !important; }
+  main div.flex:has(> div[class*="w-[71px]"]) > p {
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: none;
+  }
+  main div.flex:has(> div[class*="w-[71px]"]) > div[class*="w-[71px]"] + p {
+    flex: 1 1 auto;
+  }
+
+  /* each entry's wrapper pulls the next one up 24px — a desktop overlap trick
+     that collides wrapped mobile text */
+  main div[class*="mb-[-24px]"] { margin-bottom: 0 !important; }
+
+  /* the byline bar (avatar + author + timestamp) is noise on phones */
+  main div[class*="border-"]:has(> div[class~="size-full"][class*="pr-[33px]"]) {
+    display: none !important;
+  }
+
+  /* the generic h-full/shrink-0 squeeze rule must not crush the 6px dot
+     column, or the time label slides under the dot */
+  main div[class~="w-full"][class*="gap-[14px]"] div[class~="h-full"][class~="shrink-0"] {
+    flex-shrink: 0 !important;
+    min-width: 6px !important;
+  }
+
+  /* the design blanks the segment above the first dot and below the last one
+     (opacity-0) — the drawn line honours the same ends */
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:first-child)::before {
+    top: 50%;
+  }
+  main div[class~="w-full"][class*="gap-[14px]"] > div:first-child:has([class~="opacity-0"]:last-child)::before {
+    bottom: 50%;
+  }
+
+  /* OPINIONS: when the quote column and its photo stack, the desktop 64px
+     column gap reads as a disconnect — tighten it so the image belongs to
+     the quote above */
+  main div[class~="aj-op-hot"] { gap: 16px !important; }
+
+  /* long headlines may no longer fit on one line */
+  main .whitespace-nowrap, footer .whitespace-nowrap { white-space: normal; }
+  header nav .whitespace-nowrap { white-space: nowrap; }
+
+  /* footer link columns stack like the main content */
+  /* no footer on mobile */
+  footer, #aj-chrome-footer { display: none !important; }
+
+  /* account dashboard: height:100% cards equalise columns on desktop; in a
+     single stacked column they overflow their section onto the next heading */
+  #dc-root section > div[style*="height: 100%"] { height: auto !important; }
+
+  /* Sign out relocates to the bottom of the account dashboard (js/aj-chrome.js)
+     and reads as a destructive action */
+  #dc-root a.aj-signout-bottom {
+    width: 100%;
+    justify-content: center;
+    color: #ff435f !important;
+    font-weight: 600;
+    border-top: 1px solid #e7e7eb;
+    margin-top: 8px !important;
+    padding: 16px 12px !important;
+  }
+  #dc-root a.aj-signout-bottom svg { stroke: #ff435f; }
+
+  /* the badge tile fills the card width once it stacks above READING STREAK;
+     its desktop column divider becomes a row divider */
+  #dc-root section > div[style*="flex: 1 1 240px"] {
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e7e7eb;
+  }
+
+  /* the account sidebar nav becomes a horizontal tab strip; the selected tab
+     (Dashboard) trades its desktop left-edge bar for an underline */
+  #dc-root aside[style*="max-width"] { max-width: 100% !important; }
+  #dc-root nav[aria-label="Account"] ul[data-sidebar-nav] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid #e7e7eb;
+  }
+  #dc-root nav[aria-label="Account"] li { flex: none; }
+  #dc-root nav[aria-label="Account"] a {
+    white-space: nowrap;
+    gap: 8px !important;
+    padding: 11px 10px !important;
+    border-bottom: 2px solid transparent !important;
+  }
+  #dc-root nav[aria-label="Account"] a[aria-current="page"] {
+    border-left: 0 !important;
+    border-bottom: 2px solid #101010 !important;
+  }
+
+  /* the stat tiles (read time / +23% / streak / articles) become a horizontal
+     swipe strip — each card takes ~60% of the width so the peeking next card
+     signals there's more to scroll */
+  #dc-root section > div[style*="minmax(200px"] {
+    display: flex !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  #dc-root section > div[style*="minmax(200px"] > div {
+    flex: 0 0 60% !important;
+    scroll-snap-align: start;
+    padding: 20px 16px !important;
+  }
+
+  footer .flex { flex-wrap: wrap; }
+  footer [class*="flex-[1_0_0]"], footer [class~="flex-1"] { min-width: min(100%, 240px); }
+
+  /* the Special Report overlay card pins to both edges instead of a fixed
+     left offset + fixed width */
+  main div[class~="w-[725px]"][class~="absolute"] {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+  }
+
+  /* --- header ----------------------------------------------------------- */
+  header > div > div { padding-left: 16px; padding-right: 16px; }
+  header .aj-nav-row { position: relative; }
+
+  /* burger button */
+  .aj-nav-burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    margin: 2px 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .aj-nav-burger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #111118;
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  body.aj-nav-open .aj-nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  body.aj-nav-open .aj-nav-burger span:nth-child(2) { opacity: 0; }
+  body.aj-nav-open .aj-nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* the desktop link row becomes a dropdown panel under the header */
+  header nav {
+    display: none !important;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 3000;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0 !important;
+    background: #fff;
+    border-bottom: 1px solid #e7e7eb;
+    padding: 4px 16px 12px;
+    box-shadow: 0 16px 28px rgba(0, 0, 0, .10);
+    text-align: left;
+  }
+  body.aj-nav-open header nav { display: flex !important; }
+  header nav a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 2px 8px;
+    border-bottom: 1px solid #f0f0f3;
+  }
+  header nav a:last-child { border-bottom: 0; }
+
+  /* the black top strip (date + weather) and the white account strip
+     (Archives / Mindfull / Welcome) disappear on mobile once their controls
+     have been relocated into the menu panel */
+  header.aj-mnav-moved > div:first-child { display: none; }
+  header.aj-mnav-moved > div.w-full.border-b { display: none; }
+
+  /* brand logo rides beside the burger; auto margin pushes WATCH LIVE right */
+  header .aj-nav-row a[data-aj-mnav-brand] {
+    display: flex;
+    align-items: center;
+    margin-right: auto;
+    margin-left: 4px;
+  }
+  /* 199.2 x 72 natural size — keep the ratio explicit, the SVG stretches */
+  header .aj-nav-row a[data-aj-mnav-brand] img {
+    height: 36px !important;
+    width: 100px !important;
+  }
+
+  /* compact WATCH LIVE button */
+  header .aj-nav-row button[class*="bg-[#ff435f]"] {
+    padding: 10px 14px !important;
+    gap: 7px !important;
+  }
+  /* the play icon's SVG has no intrinsic size — width:auto would balloon
+     to the 300px replaced-element default */
+  header .aj-nav-row button[class*="bg-[#ff435f]"] img {
+    height: 12px !important;
+    width: 10px !important;
+  }
+  header .aj-nav-row button[class*="bg-[#ff435f]"] span {
+    font-size: 12px !important;
+  }
+
+  /* account row + theme toggle + language selector inside the menu panel */
+  header nav .aj-nav-extras {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 12px 8px 4px;
+    border-top: 1px solid #f0f0f3;
+  }
+  header nav .aj-nav-extras > div { background: #2d2c2c; }
+  /* account row rides on top of the menu, above the nav links */
+  header nav .aj-nav-account {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 4px 8px 8px;
+    border-bottom: 1px solid #f0f0f3;
+    margin-bottom: 4px;
+  }
+  header nav .aj-nav-account a {
+    min-height: 44px;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+  header nav .aj-nav-extras a {
+    border-left: 0 !important;
+    border-bottom: 0 !important;
+    padding: 8px 12px;
+  }
+
+  /* top strip + account strip: let items wrap instead of clipping */
+  header > div:first-child > div,
+  header > div:nth-child(2) > div { flex-wrap: wrap; row-gap: 4px; }
+  header > div:nth-child(2) div[class~="items-stretch"] {
+    flex-wrap: wrap;
+    gap: 0 !important;
+    row-gap: 2px;
+    justify-content: flex-start;
+  }
+  header .aj-signin { min-height: 44px; }
+
+  /* ask bar: the rotating suggestion takes the leftover space; the
+     "Press / to ask" affordance is keyboard-only, meaningless on touch */
+  header .aj-ask-gradient > div { gap: 8px; }
+  header .aj-ask-gradient > div > div:first-child { flex: 1 1 auto; min-width: 0; }
+  /* the rotating suggestion quote is noise at phone width */
+  header .aj-ask-gradient [class*="w-[238px]"] { display: none !important; }
+  /* "Press / to ask" is keyboard-only; it becomes a plain Ask button (the
+     whole bar is already click-to-open, so it needs no wiring of its own) */
+  header .aj-ask-gradient > div > div:last-child {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: #101010 !important;
+    padding: 10px 24px !important;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  header .aj-ask-gradient > div > div:last-child * { display: none !important; }
+  header .aj-ask-gradient > div > div:last-child::after {
+    content: "Ask";
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* --- main column ------------------------------------------------------ */
+  main { gap: 56px !important; padding-top: 40px !important; }
+  /* side gutters on every page-width column (1920px stays full-bleed: the
+     globe panels inside it carry their own padding) */
+  main [class*="max-w-[1440px]"],
+  main [class*="max-w-[1360px]"],
+  main [class*="max-w-[1240px]"] { padding-left: 16px; padding-right: 16px; }
+
+  /* --- CAPSULES (dark 224px-card strip): swipeable row ------------------ */
+  section[class*="bg-[#171717]"] > div.flex.w-full {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding: 0 16px;
+    scrollbar-width: thin;
+  }
+  section[class*="bg-[#171717]"] > div.flex.w-full > a {
+    scroll-snap-align: center;
+  }
+  /* edge fade overlays would cover the swipeable cards */
+  section[class*="bg-[#171717]"] > div[class*="bg-gradient-to-l"] { display: none; }
+
+  /* --- stories strips (circle avatars, w-[95px] cards): swipeable row ----
+     wrappers stay clamped to the row (basis 0) so only the circles scroll */
+  main div[class*="flex-[1_0_0]"]:has(a[class~="w-[95px]"]) {
+    min-width: 0 !important;
+    flex-basis: 0% !important;
+    flex-wrap: nowrap !important;
+  }
+  main div[class*="flex-[1_0_0]"]:has(> a[class~="w-[95px]"]) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    justify-content: flex-start !important;
+  }
+
+  /* --- THE GLOBE DESK: stack map over the story list -------------------- */
+  section[data-globe] [class*="h-[900px]"] { height: auto !important; }
+  section[data-globe] div[class*="max-w-[1920px]"] {
+    display: flex;
+    flex-direction: column;
+  }
+  section[data-globe] div[class*="max-w-[1920px]"] > div:first-child {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 16px;
+  }
+  section[data-globe] div[class*="max-w-[1920px]"] > div:nth-child(2) {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 60vh;
+    right: auto !important;
+    padding-top: 24px !important;
+    padding-bottom: 24px !important;
+  }
+  section[data-globe] .aj-globe-viewport { height: min(88vw, 460px) !important; }
+  /* the story list fills the fixed 900px panel on desktop (flex-basis 0);
+     stacked, it sizes to its rows and scrolls inside the 60vh cap */
+  section[data-globe] .aj-globe-list {
+    flex: none !important;
+    max-height: calc(60vh - 48px) !important;
+  }
+  /* the GLOBE/FLAT toggle is a compact fixed-width cluster — never wrap it */
+  section[data-globe] div[class~="w-[165px]"] { flex-wrap: nowrap !important; }
+
+  /* --- games strip (TEST AGAINST THE TIME): stack the three cards ------- */
+  div[class*="h-[338px]"][class*="w-[1440px]"] {
+    flex-direction: column;
+    height: auto !important;
+    align-items: stretch;
+  }
+  div[class*="h-[338px]"][class*="w-[1440px]"] > div.relative.w-px {
+    width: 100% !important;
+    height: 1px !important;
+    overflow: hidden;
+  }
+  div[class*="h-[338px]"][class*="w-[1440px]"] > :is(a, div):not(.w-px) {
+    min-height: 280px;
+  }
+  div[class*="h-[338px]"][class*="w-[1440px]"] div[class~="shrink-0"][class*="gap-[12px]"] {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  div[class*="h-[338px]"][class*="w-[1440px]"] [class*="w-[240.334px]"] {
+    width: auto !important;
+    min-width: 0;
+  }
+
+  /* --- live-match strip (dark 1360px scoreboard) -------------------------
+     a dense composite: keep its inner rows inline like desktop (nowrap +
+     ellipsis does the shrinking), stack only the two big columns */
+  main div[class*="max-w-[1360px]"] {
+    flex-wrap: nowrap;
+    flex-direction: column;
+    /* stacked with items-start, children would size to max-content */
+    align-items: stretch;
+  }
+  main div[class*="max-w-[1360px]"] .flex { flex-wrap: nowrap; }
+  main div[class*="max-w-[1360px]"] .flex:has(> [class*="flex-[1_0_0]"] ~ [class*="flex-[1_0_0]"]) {
+    flex-direction: row;
+  }
+  main div[class*="max-w-[1360px]"] [class*="flex-[1_0_0]"],
+  main div[class*="max-w-[1360px]"] [class~="flex-1"] { min-width: 0; flex-basis: 0% !important; }
+  main div[class*="max-w-[1360px]"] [class*="gap-[64px]"] { gap: 8px !important; }
+  main div[class*="max-w-[1360px]"] div[class~="justify-between"] > div:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  main div[class*="max-w-[1360px]"] [class~="border-l"] {
+    border-left: 0 !important;
+    border-top: 1px solid #373737;
+    padding-top: 24px;
+    margin-top: 8px;
+  }
+  /* the strip's feed rows rely on nowrap + ellipsis; re-wrapped text
+     collides with its negative-margin layout */
+  main div[class*="max-w-[1360px]"] [class~="text-ellipsis"] { white-space: nowrap !important; }
+  main div[class*="max-w-[1360px]"] [class*="mb-[-32px]"] { margin-bottom: 0 !important; }
+  main div[class*="max-w-[1360px]"] [class*="h-[17px]"] { height: auto !important; }
+  main div[class*="max-w-[1360px]"] [class*="text-[22px]"] {
+    font-size: clamp(13px, 5vw, 22px) !important;
+  }
+  /* scoreboard squeeze for narrow phones: smaller flags, tighter score box */
+  main div[class*="max-w-[1360px]"] div[class~="w-[40px]"][class~="shrink-0"] {
+    width: 28px !important;
+    height: 19px !important;
+  }
+  main div[class*="max-w-[1360px]"] [class*="px-[18px]"] {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  /* the oversized trophy artwork behind the strip swallows the content */
+  main div[class~="border-y"][class*="bg-[#202020]"] > div[class~="pointer-events-none"] { display: none; }
+
+  /* --- bundle pages (games/account, #dc-root) ----------------------------
+     their layout comes from inline styles, hence the !important overrides */
+  #dc-root main { flex-direction: column !important; }
+  #dc-root main > aside {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  #dc-root main > section { width: 100%; }
+
+  /* --- footer ------------------------------------------------------------ */
+  footer > div > div { flex-wrap: wrap; padding-left: 16px; padding-right: 16px; }
+
+  /* --- touch targets ------------------------------------------------------ */
+  header a, footer a { min-height: 34px; }
+  main a[href], main button { min-height: 32px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* MOBILE ONLY (below 768px) — typography + density                    */
+/* ------------------------------------------------------------------ */
+@media (max-width: 767px) {
+
+  /* headline scale — hierarchy preserved, nothing clips */
+  [class*="text-[64px]"] { font-size: clamp(28px, 7.5vw, 42px) !important; line-height: 1.1 !important; letter-spacing: -1px !important; }
+  [class*="text-[40px]"] { font-size: clamp(22px, 5.8vw, 30px) !important; line-height: 1.15 !important; }
+  [class*="text-[38px]"] { font-size: clamp(21px, 5.6vw, 28px) !important; line-height: 1.15 !important; }
+  [class*="text-[36px]"] { font-size: clamp(20px, 5.4vw, 27px) !important; line-height: 1.15 !important; }
+  [class*="text-[32px]"] { font-size: clamp(19px, 5.2vw, 25px) !important; line-height: 1.18 !important; }
+  [class*="text-[28px]"] { font-size: clamp(18px, 5vw, 22px) !important; line-height: 1.2 !important; }
+  [class*="text-[26px]"] { font-size: clamp(17px, 4.9vw, 21px) !important; line-height: 1.2 !important; }
+  [class*="text-[24px]"] { font-size: clamp(17px, 4.8vw, 20px) !important; line-height: 1.25 !important; }
+  [class*="text-[22px]"] { font-size: clamp(16px, 4.6vw, 18px) !important; line-height: 1.3 !important; }
+  [class*="text-[20px]"] { font-size: clamp(15px, 4.4vw, 17px) !important; line-height: 1.3 !important; }
+  [class*="text-[18px]"] { font-size: 15px !important; }
+  [class*="text-[17px]"] { font-size: 14.5px !important; }
+  [class*="text-[16px]"] { font-size: 14px !important; }
+
+  /* tall hero image boxes shrink with the viewport (cover crop keeps ratio) */
+  main [class*="h-[480px]"] { height: clamp(230px, 62vw, 480px) !important; }
+  main [class*="h-[524px]"] { height: clamp(250px, 66vw, 524px) !important; }
+
+  /* list-row thumbnails scale down so the headline column stays readable */
+  main .flex:has(> [class*="flex-[1_0_0]"]) > a[class*="w-[200px]"][class~="shrink-0"],
+  main .flex:has(> [class*="flex-[1_0_0]"]) > div[class*="w-[200px]"][class~="shrink-0"] {
+    width: 128px !important;
+    height: 96px !important;
+  }
+
+  main { gap: 44px !important; padding-top: 28px !important; }
+
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion                                                      */
+/* ------------------------------------------------------------------ */
+/* Summarize button — one shared component, all viewports: soft gradient wash
+   on hover while the spark icon does an eased full turn. */
+.aj-summarize { transition: background .25s ease; }
+.aj-summarize:hover { background: linear-gradient(120deg, #f4effc, #e3d9f7); }
+.aj-summarize img {
+  transition: transform .55s cubic-bezier(.22, .61, .36, 1);
+  mix-blend-mode: multiply;
+}
+.aj-summarize:hover img { transform: rotate(360deg); }
+
+/* the masked-gradient variant of the spark icon (mask-image on a stack of
+   divs instead of a plain <img>) has no single element the mask-composited
+   shape lives on, so the img-only rule above spins the underlying gradient
+   texture, not the visible sparkle silhouette — rotate the icon's outer
+   wrapper instead so the whole mark turns as one piece */
+.aj-summarize > div:first-child {
+  transition: transform .55s cubic-bezier(.22, .61, .36, 1);
+}
+.aj-summarize:hover > div:first-child { transform: rotate(360deg); }
+
+/* The sticky-rail sparkle ("compiled from AJ's archive") spins with the same
+   eased loop as the Ask Al Jazeera title spark — all viewports. */
+@keyframes ajSparkSpin {
+  0% { transform: rotate(0deg); animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
+  23% { transform: rotate(360deg); }
+  100% { transform: rotate(360deg); }
+}
+main [class~="sticky"] img[class~="size-[15px]"] {
+  animation: ajSparkSpin 2.4s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aj-nav-burger span { transition: none; }
+  main [class~="sticky"] img[class~="size-[15px]"] { animation: none; }
+}
