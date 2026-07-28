@@ -3,7 +3,6 @@
    Page grid: 1920 frame with 240px side margins => 1440px content column. */
 
 .fy {
-  zoom: 90%;
   --fy-max: 1440px;
   --fy-ink: #171717;
   --fy-ink-2: #202020;
