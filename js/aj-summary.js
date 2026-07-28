@@ -38,7 +38,7 @@
 
     /* the sheet: spring slide-up via overshoot bezier */
     /* same animated wash as the header ask panel (.aj-ask-gradient in aj-chrome.css) */
-    '.aj-sum{position:fixed;left:0;right:0;bottom:0;z-index:9990;height:400px;max-height:80vh;overflow-y:auto;',
+    '.aj-sum{position:fixed;left:0;right:0;bottom:0;z-index:9990;height:auto;max-height:46vh;overflow-y:auto;',
     '  background-image:linear-gradient(90deg,#fdf5ea,#fbeef3,#f4eefb,#eef1fb,#f6f4fb,#fbf7f2,#f4eefb,#fbeef3,#fdf5ea);',
     '  background-size:300% 100%;animation:ajSumWash 8s ease-in-out infinite;',
     '  box-shadow:0 -18px 60px rgba(20,10,40,.18);',
@@ -46,7 +46,7 @@
     '.aj-sum.on{transform:translateY(0)}',
     '@keyframes ajSumWash{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}',
 
-    '.aj-sum__inner{max-width:1440px;margin:0 auto;padding:40px 24px 40px;position:relative;display:flex;flex-direction:column;min-height:calc(100% - 80px);box-sizing:border-box}',
+    '.aj-sum__inner{max-width:1440px;margin:0 auto;padding:24px 24px 22px;position:relative;display:flex;flex-direction:column;box-sizing:border-box}',
 
     /* header: orb + gradient label */
     '.aj-sum__head{display:flex;align-items:center;gap:8px}',
@@ -54,11 +54,11 @@
     '.aj-sum.is-running .aj-sum__label{animation:ajSumPulse 1.6s ease-in-out infinite alternate}',
     '@keyframes ajSumPulse{from{opacity:1}to{opacity:.35}}',
 
-    '.aj-sum__close{position:absolute;top:36px;right:24px;width:32px;height:32px;border:0;background:none;cursor:pointer;color:#575757;font-size:19px;line-height:32px;text-align:center;padding:0;transition:color .2s ease}',
+    '.aj-sum__close{position:absolute;top:20px;right:24px;width:32px;height:32px;border:0;background:none;cursor:pointer;color:#575757;font-size:19px;line-height:32px;text-align:center;padding:0;transition:color .2s ease}',
     '.aj-sum__close:hover{color:#141414}',
 
     /* skeleton shimmer while "generating" */
-    '.aj-sum__skel{display:flex;flex-direction:column;gap:11px;margin-top:30px}',
+    '.aj-sum__skel{display:flex;flex-direction:column;gap:9px;margin-top:20px}',
     '.aj-sum__skel i{display:block;height:15px;border-radius:4px;background:rgba(32,32,32,.08);position:relative;overflow:hidden}',
     '.aj-sum__skel i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 0,rgba(255,255,255,.8) 50%,transparent 100%);background-size:200% 100%;animation:ajSumShimmer 1.1s linear infinite}',
     '@keyframes ajSumShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}',
@@ -67,7 +67,7 @@
     '.aj-sum__skel .b1{width:34%}.aj-sum__skel .b2{width:31%}.aj-sum__skel .b3{width:26%}.aj-sum__skel .b4{width:40%}',
 
     /* body text */
-    '.aj-sum__body{display:none;flex-direction:column;gap:16px;margin-top:28px;font-family:Lora,Georgia,serif;font-weight:500;font-style:italic;color:#202020;line-height:1.5}',
+    '.aj-sum__body{display:none;flex-direction:column;gap:12px;margin-top:18px;font-family:Lora,Georgia,serif;font-weight:500;font-style:italic;color:#202020;line-height:1.5}',
     '.aj-sum__body.on{display:flex}',
     '.aj-sum__para{display:flex;flex-wrap:wrap;gap:0 4.5px;font-size:18px;margin:0}',
     '.aj-sum__points{display:flex;flex-direction:column;gap:5px;font-size:17px}',
@@ -76,7 +76,7 @@
     '.aj-sum__w.is-in{opacity:1;transform:none;filter:none}',
 
     /* footer bar */
-    '.aj-sum__foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:26px;font-family:Anybody,Arial,sans-serif;font-size:15px;letter-spacing:-0.6px;color:#000;opacity:0;transition:opacity .45s ease-out}',
+    '.aj-sum__foot{display:flex;align-items:center;justify-content:space-between;margin-top:0;padding-top:18px;font-family:Anybody,Arial,sans-serif;font-size:15px;letter-spacing:-0.6px;color:#000;opacity:0;transition:opacity .45s ease-out}',
     '.aj-sum__foot.is-in{opacity:.97}',
     '.aj-sum__meta{display:flex;align-items:center;gap:12px}',
     '.aj-sum__src{opacity:.6}',
