@@ -44,17 +44,15 @@
     '  background:linear-gradient(90deg,#6b3ba5,#a34fd4);-webkit-background-clip:text;background-clip:text;color:transparent}',
 
     /* LISTEN | Summarize toolbar (same voice as the article toolbar) */
-    '.aj-upnext__tools{display:flex;align-items:stretch;flex:none;border:1px solid #202020}',
+    '.aj-upnext__tools{display:flex;align-items:stretch;flex:none;border:1px solid #dfdfdf}',
     '.aj-upnext__tool{display:flex;align-items:center;gap:6px;padding:12px 16px;background:none;border:0;cursor:pointer;',
     '  font-family:Anybody,Arial,sans-serif;font-size:14px;letter-spacing:-0.04em;color:#575757;white-space:nowrap}',
-    '.aj-upnext__tool+.aj-upnext__tool{border-left:1px solid #dcdcd4}',
+    '.aj-upnext__tool+.aj-upnext__tool{border-left:1px solid #dfdfdf}',
     '.aj-upnext__tool svg{width:16px;height:16px;flex:none}',
 
-    /* CLOSE ribbon riding the top-right edge */
-    '.aj-upnext__close{position:absolute;right:0;top:2px;display:flex;align-items:center;gap:4px;padding:12px 20px;border:0;cursor:pointer;',
-    '  background:#ff435f;color:#fff;font-family:Anybody,Arial,sans-serif;font-weight:600;font-size:14px;letter-spacing:.02em;text-transform:uppercase;line-height:1}',
-    '.aj-upnext__close svg{width:14px;height:14px;flex:none}',
-    '.aj-upnext__close:hover{background:#e93852}',
+    /* quiet close, same voice as the AI summary sheet's ✕ */
+    '.aj-upnext__close{position:absolute;top:14px;right:24px;width:32px;height:32px;border:0;background:none;cursor:pointer;color:#575757;font-size:17px;line-height:32px;text-align:center;padding:0;transition:color .2s ease}',
+    '.aj-upnext__close:hover{color:#141414}',
 
     '@media (max-width:1023px){',
     '  .aj-upnext__row{gap:20px;padding:16px}',
@@ -82,7 +80,7 @@
       '<div class="aj-upnext__track"><div class="aj-upnext__fill"></div></div>' +
       '<div class="aj-upnext__row">' +
         '<a class="aj-upnext__card" href="aljazeera-article.html">' +
-          '<img class="aj-upnext__img" src="assets/foryou/wc-salah.jpg" alt="">' +
+          '<img class="aj-upnext__img" src="assets/foryou/upnext-fans.png" alt="">' +
           '<span class="aj-upnext__text">' +
             '<span class="aj-upnext__tag">/ Up next</span>' +
             '<h3 class="aj-upnext__title">Messi and Salah face off in the thrilling last 16 match. The entire region is glued to this epic showdown.</h3>' +
@@ -100,10 +98,7 @@
           '</button>' +
         '</div>' +
       '</div>' +
-      '<button class="aj-upnext__close" type="button" aria-label="Close up next">' +
-        '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12"/></svg>' +
-        'Close' +
-      '</button>';
+      '<button class="aj-upnext__close" type="button" aria-label="Close up next">✕</button>';
     document.body.appendChild(bar);
     fill = bar.querySelector('.aj-upnext__fill');
 
