@@ -525,6 +525,8 @@
       row.addEventListener('mouseenter', activate);
       flatMk.addEventListener('mouseenter', function () { activate(); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
       globeMk.addEventListener('mouseenter', function () { activate(); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+      flatMk.addEventListener('click', function (ev) { ev.stopPropagation(); openDetail(entry); });
+      globeMk.addEventListener('click', function (ev) { ev.stopPropagation(); openDetail(entry); });
     });
 
     /* ---------- article detail swap (click a story -> detail view with back) ---------- */
@@ -534,7 +536,7 @@
     (function () {
       var s = document.createElement('style'); s.id = 'aj-gd-detail-style';
       s.textContent = [
-        '.aj-gd-detail{display:none;flex:1 1 auto;min-height:0;flex-direction:column;gap:0;padding:48px 0 0;width:100%;box-sizing:border-box;color:#fff;overflow:hidden}',
+        '.aj-gd-detail{display:none;flex:1 1 auto;min-height:0;flex-direction:column;gap:0;padding:48px 0 0;width:100%;box-sizing:border-box;color:#fff;overflow-y:auto;-webkit-overflow-scrolling:touch}',
         '.aj-globe-detailing .aj-globe-list{display:none}',
         '.aj-globe-detailing .aj-gd-detail{display:flex}',
         /* the panel itself carries py-[64px]; while the detail is up, the detail
@@ -542,6 +544,7 @@
         '.aj-globe-detailing{padding-top:0!important;padding-bottom:0!important}',
         '.aj-gd-back{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;margin:0 32px;font:700 11px/1 inherit;letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,255,255,.62);cursor:pointer;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.14);padding:0 0 16px;width:calc(100% - 64px);text-align:left;transition:color .2s ease}',
         '.aj-gd-back:hover{color:#fff}',
+        '.aj-gd-handle{display:none}',
         '.aj-gd-kicker{display:flex;align-items:center;gap:10px;margin:40px 32px 0;font:700 11.5px/1 inherit;letter-spacing:1.6px;text-transform:uppercase}',
         '.aj-gd-kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--c,#ef304a)}',
         '.aj-gd-kicker .live{background:#e3b23c;color:#111;padding:3px 7px;font-weight:800}',
@@ -558,8 +561,10 @@
         '.aj-gd-cta:hover{background:#eec158}',
         '.aj-gd-upd{font:600 10.5px/1 inherit;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.42)}',
 
-        /* --- AI "right now" summary, pinned to the panel foot --- */
-        '.aj-gd-ai{margin-top:auto;width:100%;padding-top:24px}',
+        /* --- AI "right now" summary, pinned to the panel foot: sticky (not
+           just margin-top:auto) so it stays put at the bottom of the drawer
+           while the rest of the detail content scrolls underneath it */
+        '.aj-gd-ai{margin-top:auto;width:100%;padding-top:24px;position:sticky;bottom:0;background:#202020;z-index:2}',
         '.aj-gd-ai-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 32px 12px;font:600 10.5px/1 inherit;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,.45)}',
         '.aj-gd-ai-head .rev{display:inline-flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0;font:600 12.5px/1 inherit;color:#fff}',
         '.aj-gd-ai-head .rev i{font-style:normal;color:#e3b23c;font-size:13px}',
@@ -588,11 +593,28 @@
         '.aj-gd-detail>*:nth-child(5){transition-delay:.4s}',
         '.aj-gd-detail>*:nth-child(6){transition-delay:.5s}',
         '.aj-gd-detail>*:nth-child(7){transition-delay:.65s}',
-        '@media (max-width:1023px){.aj-gd-detail{padding-top:24px}',
-        '  .aj-gd-back,.aj-gd-kicker,.aj-gd-head,.aj-gd-body,.aj-gd-stats,.aj-gd-ctarow,.aj-gd-ai-head{margin-left:16px;margin-right:16px}',
-        '  .aj-gd-back{width:calc(100% - 32px)}',
-        '  .aj-gd-head{font-size:26px}',
-        '  .aj-gd-ai-card{padding:20px 16px 16px}}',
+        '@media (max-width:1023px){.aj-gd-detail{padding-top:12px}',
+        '  .aj-gd-kicker,.aj-gd-head,.aj-gd-body,.aj-gd-stats,.aj-gd-ctarow,.aj-gd-ai-head{margin-left:16px;margin-right:16px}',
+        /* drawer affordance: drag handle + a round × close button, no more text link */
+        '  .aj-gd-handle{display:block;align-self:center;width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.28);margin:0 0 14px}',
+        '  .aj-gd-back{position:absolute;top:12px;right:16px;width:32px;height:32px;margin:0;border:0;border-radius:50%;background:rgba(255,255,255,.12);padding:0;text-indent:-9999px;overflow:hidden;white-space:nowrap}',
+        '  .aj-gd-back::after{content:"✕";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-indent:0;font-size:14px;color:#fff}',
+        '  .aj-gd-back:active{background:rgba(255,255,255,.22)}',
+        /* smaller type scale so more of the story fits before scrolling */
+        '  .aj-gd-kicker{margin-top:24px;font-size:10px;gap:8px}',
+        '  .aj-gd-head{font-size:19px;line-height:1.25;margin-top:8px}',
+        '  .aj-gd-body{font-size:13px;line-height:1.45;margin-top:12px}',
+        '  .aj-gd-stats{margin-top:18px}',
+        '  .aj-gd-stats>div{padding:9px 12px}',
+        '  .aj-gd-stats span{font-size:9px;margin-bottom:4px}',
+        '  .aj-gd-stats b{font-size:16px}',
+        '  .aj-gd-ctarow{margin-top:18px;gap:12px}',
+        '  .aj-gd-cta{font-size:10px;padding:10px 14px}',
+        '  .aj-gd-upd{font-size:9px}',
+        '  .aj-gd-ai-card{padding:20px 16px 16px}',
+        '  .aj-gd-ai-txt{font-size:13.5px;min-height:calc(1.45em * 3)}',
+        '  .aj-gd-ai-meta{gap:10px;margin-top:10px;font-size:8.5px}',
+        '  .aj-gd-ai-meta .ok svg{width:9px;height:9px}}',
         '@media (prefers-reduced-motion: reduce){.aj-gd-detail>*{transition:none;opacity:1;transform:none}.aj-gd-ai-txt.typing::after{animation:none}}'
       ].join('\n');
       document.head.appendChild(s);
@@ -625,6 +647,7 @@
       focusOn(e);
       var liveHtml = e.live ? '<span class="live">Live</span>' : '';
       detail.innerHTML =
+        '<span class="aj-gd-handle" aria-hidden="true"></span>' +
         '<button type="button" class="aj-gd-back">← Back to the world</button>' +
         '<div class="aj-gd-kicker" style="--c:' + e.color + '"><span class="dot"></span><span style="color:' + e.color + '">' + esc(e.cat || 'News') + '</span>' + liveHtml + '<span class="reg">· ' + esc(e.region || 'World') + '</span></div>' +
         '<h2 class="aj-gd-head">' + esc(e.headline) + '</h2>' +

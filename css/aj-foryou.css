@@ -1455,6 +1455,19 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
 
 #fy-stories-rail .rounded-full { border-radius: 9999px; }
 
+/* the whole rail (Weekly Brief + all story avatars) scrolls horizontally as
+   one strip now that the "next" button is gone */
+#fy-stories-rail > div {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#fy-stories-rail > div::-webkit-scrollbar { display: none; }
+#fy-stories-rail > div > div {
+  flex: none;
+  width: max-content;
+}
+
 /* Stories rail captions: wrap up to 2 lines instead of clipping at one, then ellipsize. */
 #fy-stories-rail p {
   white-space: normal;

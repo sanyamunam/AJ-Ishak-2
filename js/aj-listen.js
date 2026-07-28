@@ -112,9 +112,12 @@
 
   function wireButtons() {
     [].slice.call(document.querySelectorAll('button, a')).forEach(function (b) {
-      if (b.getAttribute('data-ajlisten')) return;
-      if (/(^|\s)listen(\s|$|\s*[▸►·])/i.test((b.textContent || '').trim())) {
+      if (b.getAttribute('data-ajlisten-bound')) return;
+      var marked = b.getAttribute('data-ajlisten');
+      var looksLikeListen = /(^|\s)listen(\s|$|\s*[▸►·])/i.test((b.textContent || '').trim());
+      if (marked || looksLikeListen) {
         b.setAttribute('data-ajlisten', '1');
+        b.setAttribute('data-ajlisten-bound', '1');
         b.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); open(); });
       }
     });

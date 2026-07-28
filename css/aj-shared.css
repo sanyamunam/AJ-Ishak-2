@@ -3190,3 +3190,8 @@ body {
     }
   }
 }
+
+/* category tag pills (PODCAST, Explainer, /FIFA WORLD CUP…) sit in front of
+   their decorative corner-ribbon icon — the icon is a solid shape that
+   otherwise paints over the pill's left edge and clips the label text */
+.rounded-tl-\[16px\] { position: relative; z-index: 1; }

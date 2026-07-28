@@ -14,6 +14,20 @@
    or higher-specificity page rules.
    ========================================================================== */
 
+/* category tag pills (PODCAST, Explainer, /FIFA WORLD CUP…) sit in front of
+   their decorative corner-ribbon icon at every width — the icon is a solid
+   shape that otherwise paints over the pill's left edge and clips the label */
+.rounded-tl-\[16px\] { position: relative; z-index: 1; }
+
+/* "Popular Podcasts" strip: scrolls horizontally in its own box at every
+   width, instead of only fitting flush at the full 1920px design width and
+   blowing out the page's horizontal scroll on anything narrower */
+div[class~="items-center"][class~="gap-[40px]"]:has(> div[class~="w-[360px]"]) {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
 /* burger is part of the DOM on all widths but only shown on small screens */
 .aj-nav-burger { display: none; }
 /* menu-panel slot for the theme toggle + language selector; empty on desktop
@@ -99,6 +113,15 @@
      exact-token match (a substring match would also hit min-w-px and
      hide real content) */
   main > section > div[class*="max-w-["] > div[class~="w-px"] { display: none; }
+  /* hairline column dividers anywhere in a stacked row */
+  main .flex > div[class~="w-px"][class~="self-stretch"] { display: none !important; }
+
+  /* flexible-height image links (flex-[1_0_0] fill panels) collapse to a
+     sliver once their row stacks — give them the hero-image height instead */
+  main a[class~="min-h-px"][class~="w-full"][class*="flex-[1_0_0]"]:has(> img) {
+    height: clamp(230px, 42vw, 480px) !important;
+    flex: none !important;
+  }
 
   /* card toolbars (SHARE | LISTEN | Summarize) and byline bars wrap onto a
      second line instead of clipping */
@@ -121,6 +144,20 @@
     flex-shrink: 1;
     min-width: 0;
     max-width: 100%;
+  }
+
+  /* 60-second films strip (fy-films capsule track): stays a single
+     horizontally-scrollable row instead of stacking the cards vertically */
+  .fy-films .flex[class~="shrink-0"][class~="justify-center"] {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .fy-films .flex[class~="shrink-0"][class~="justify-center"]::-webkit-scrollbar { display: none; }
+  .fy-films .flex[class~="shrink-0"][class~="justify-center"] > a {
+    flex: none !important;
   }
 
   /* CONTINUE LISTENING disc row becomes a swipeable strip — it must stay a
@@ -380,7 +417,7 @@
 
   /* --- header ----------------------------------------------------------- */
   header > div > div { padding-left: 16px; padding-right: 16px; }
-  header .aj-nav-row { position: relative; }
+  header .aj-nav-row { position: relative; padding-top: 12px; padding-bottom: 12px; }
 
   /* burger button */
   .aj-nav-burger {
@@ -514,8 +551,11 @@
 
   /* ask bar: the rotating suggestion takes the leftover space; the
      "Press / to ask" affordance is keyboard-only, meaningless on touch */
+  header .aj-ask-gradient { padding-top: 9px !important; padding-bottom: 9px !important; }
   header .aj-ask-gradient > div { gap: 8px; }
   header .aj-ask-gradient > div > div:first-child { flex: 1 1 auto; min-width: 0; }
+  header .aj-ask-gradient .aura-orb { --size: 24px !important; }
+  header .aj-ask-gradient p[class*="text-[14px]"] { font-size: 12.5px !important; }
   /* the rotating suggestion quote is noise at phone width */
   header .aj-ask-gradient [class*="w-[238px]"] { display: none !important; }
   /* "Press / to ask" is keyboard-only; it becomes a plain Ask button (the
@@ -524,16 +564,16 @@
     display: flex !important;
     align-items: center;
     justify-content: center;
-    background: #101010 !important;
-    padding: 10px 24px !important;
-    min-height: 40px;
+    background: #fff !important;
+    padding: 6px 16px !important;
+    min-height: 30px;
     cursor: pointer;
   }
   header .aj-ask-gradient > div > div:last-child * { display: none !important; }
   header .aj-ask-gradient > div > div:last-child::after {
     content: "Ask";
-    color: #fff;
-    font-size: 14px;
+    color: #202020;
+    font-size: 13px;
     font-weight: 600;
   }
 
@@ -575,7 +615,7 @@
     justify-content: flex-start !important;
   }
 
-  /* --- THE GLOBE DESK: stack map over the story list -------------------- */
+  /* --- THE GLOBE DESK: map only, story list panel dropped --------------- */
   section[data-globe] [class*="h-[900px]"] { height: auto !important; }
   section[data-globe] div[class*="max-w-[1920px]"] {
     display: flex;
@@ -587,24 +627,202 @@
     height: auto !important;
     padding: 0 16px;
   }
+  /* "15:45:25 GMT · 3 STORIES LIVE" timestamp — noise at phone width */
+  section[data-globe] p[class*="text-[16px]"][class*="uppercase"] {
+    display: none !important;
+  }
   section[data-globe] div[class*="max-w-[1920px]"] > div:nth-child(2) {
-    position: static !important;
+    display: none !important;
+  }
+  /* tapping a marker still needs somewhere to show the story: promote the
+     same panel to a bottom sheet just for the detail view (the story list
+     inside it stays hidden via the .aj-globe-detailing rule in globe.js) */
+  section[data-globe] div[class*="max-w-[1920px]"] > div:nth-child(2).aj-globe-detailing {
+    display: flex !important;
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
     width: 100% !important;
     height: auto !important;
-    max-height: 60vh;
-    right: auto !important;
-    padding-top: 24px !important;
-    padding-bottom: 24px !important;
+    max-height: 80vh;
+    z-index: 1000;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -12px 32px rgba(0,0,0,.45);
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+    overflow-y: auto;
   }
   section[data-globe] .aj-globe-viewport { height: min(88vw, 460px) !important; }
-  /* the story list fills the fixed 900px panel on desktop (flex-basis 0);
-     stacked, it sizes to its rows and scrolls inside the 60vh cap */
-  section[data-globe] .aj-globe-list {
-    flex: none !important;
-    max-height: calc(60vh - 48px) !important;
-  }
   /* the GLOBE/FLAT toggle is a compact fixed-width cluster — never wrap it */
   section[data-globe] div[class~="w-[165px]"] { flex-wrap: nowrap !important; }
+  /* "◈ Tehran, Iran" footer location label — redundant once the story list is gone */
+  section[data-globe] p[class*="font-lora"][class*="italic"] { display: none !important; }
+
+  /* --- popular podcasts strip: horizontal scroll, each card hints at the
+     next one instead of stacking full-width -------------------------------- */
+  div[class~="items-center"][class~="gap-[40px]"] {
+    flex-wrap: nowrap !important;
+    gap: 16px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  div[class~="items-center"][class~="gap-[40px]"]::-webkit-scrollbar { display: none; }
+  div[class~="items-center"][class~="gap-[40px]"] > div[class*="w-[360px]"] {
+    width: 78vw !important;
+    flex: none !important;
+  }
+  /* Follow/Following pill: icon only, no label, to save width in the card */
+  div[class~="items-center"][class~="gap-[40px]"] button[class*="border-[#bdbdbd]"][class*="bg-white"] p {
+    display: none !important;
+  }
+
+  /* live-scores strip next/prev arrow: redundant once the strip is swipeable */
+  div[class~="h-[88px]"][class~="w-[40px]"] { display: none !important; }
+
+  /* --- featured text+image cards (podcast/opinions/explainer rows): image
+     moves above the text and goes full-width instead of a fixed side column */
+  main div[class~="items-start"][class~="justify-center"][class~="gap-[64px]"]:not(:has(> div[class~="sticky"])) {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  main div[class~="items-start"][class~="justify-center"][class~="gap-[64px]"]:not(:has(> div[class~="sticky"])) > div:first-child {
+    order: 2;
+    width: 100% !important;
+    padding-right: 0 !important;
+  }
+  main div[class~="items-start"][class~="justify-center"][class~="gap-[64px]"]:not(:has(> div[class~="sticky"])) > div:last-child {
+    order: 1;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    align-self: stretch;
+  }
+  main div[class~="items-start"][class~="justify-center"][class~="gap-[64px]"]:not(:has(> div[class~="sticky"])) p[class*="text-[28px]"] {
+    font-size: 21px !important;
+  }
+  main div[class~="items-start"][class~="justify-center"][class~="gap-[64px]"]:not(:has(> div[class~="sticky"])) p[class*="text-[17px]"] {
+    font-size: 14.5px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* the secondary text+image rows (gap-[40px]: opinions, podcasts, explainers)
+     follow the same rhythm as the featured rows above — photo on top at full
+     width, text beneath — instead of squeezing a side column into a sliver */
+  main div[class~="items-center"][class~="gap-[40px]"][class~="w-full"]:has(> a[class~="relative"] img) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+  main div[class~="items-center"][class~="gap-[40px]"][class~="w-full"]:has(> a[class~="relative"] img) > div:first-child {
+    order: 2;
+    width: 100% !important;
+    height: auto !important;
+    align-self: stretch;
+    gap: 16px !important;
+  }
+  main div[class~="items-center"][class~="gap-[40px]"][class~="w-full"]:has(> a[class~="relative"] img) > a[class~="relative"] {
+    order: 1;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    flex: none !important;
+    align-self: stretch;
+  }
+
+  /* --- opinions card: tighter byline gap, smaller quote mark, less bottom space --- */
+  .aj-op-card { padding-bottom: 28px !important; }
+  .aj-op-card div[class~="gap-[12px]"][class~="flex-1"] { gap: 4px !important; }
+  main div[class~="flex-col"][class~="justify-center"][class~="gap-[12px]"][class~="items-start"] { gap: 4px !important; }
+  .aj-op-card div[class~="h-[56px]"][class~="w-\[94\.706px\]"],
+  .aj-op-card div[class*="w-[94.706px]"] {
+    width: 56px !important;
+    height: 33px !important;
+  }
+  .aj-op-card div[class~="items-center"][class~="gap-[8px]"] { margin-top: 12px !important; }
+
+  /* the smaller (non-lead) opinion cards use an explicit 32px gap between
+     the text block and byline — match it to the lead card's tighter rhythm */
+  main div[class~="flex-col"][class~="items-start"][class~="gap-[32px]"] {
+    gap: 12px !important;
+  }
+
+  /* --- podcast feature card: tighter tag-to-title gap, smaller PODCAST tag --- */
+  main div[class~="h-[348px]"][class~="justify-between"] {
+    height: auto !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+  }
+  main div[class~="bg-[#77d7d3]"][class~="pl-[24px]"] {
+    gap: 4px !important;
+    padding-left: 12px !important;
+  }
+  main div[class~="bg-[#2f9d98]"] {
+    padding: 6px 8px !important;
+  }
+  main div[class~="bg-[#2f9d98]"] p[class*="text-[15px]"] {
+    font-size: 11px !important;
+  }
+  /* the ribbon-tail icon behind the tag is taller than the tag itself
+     (h-[36px] vs the tag's own ~24px) — match it so it stops poking out below */
+  main img[class~="h-\[36px\]"][class~="w-\[23\.977px\]"] {
+    height: 24px !important;
+  }
+
+  /* --- World Cup "Week 1 Round up" avatar strip: smaller + tighter overlap --- */
+  main div[class~="max-w-[1440px]"][class~="items-start"] a[class~="w-[95px]"] div[class~="size-[80px]"] {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  /* the single-match avatars' gradient ring is a fixed 88px overlay — scale
+     it with the 56px photo (56 + 2*4px inset = 64) so the stroke hugs it */
+  main a[class~="w-[95px]"] div[class~="size-[88px]"] {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  main div[class~="max-w-[1440px]"][class~="items-start"] div[class~="pr-[32px]"] {
+    padding-right: 16px !important;
+  }
+  main div[class~="max-w-[1440px]"][class~="items-start"] div[class~="mr-[-32px]"] {
+    margin-right: -16px !important;
+    width: 56px !important;
+    height: 56px !important;
+  }
+  /* the group card's third avatar has no negative margin so the size rules
+     above miss it — shrink it too, then refit the gradient ring around the
+     56px stack (3 circles overlapped 16px = 136px content + 4px ring inset) */
+  main a[class~="rounded-[128px]"] > div[class~="size-[80px]"] {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  main a[class~="rounded-[128px]"] {
+    height: 60px !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+  main a[class~="rounded-[128px]"] > span[class~="w-[184px]"] {
+    width: 144px !important;
+    height: 64px !important;
+  }
+
+  /* the round-up avatars + match badges scroll together as one strip */
+  main div[class~="flex-[1_0_0]"][class~="items-center"][class~="gap-[12px]"]:has(> div[class~="shrink-0"][class~="pr-[32px]"]) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    min-width: 0 !important;
+    flex-basis: 0% !important;
+    padding-bottom: 8px;
+  }
+  main div[class~="flex-[1_0_0]"][class~="items-center"][class~="gap-[12px]"]:has(> div[class~="shrink-0"][class~="pr-[32px]"]) > div[class~="shrink-0"][class~="pr-[32px]"] {
+    flex: none !important;
+  }
+  main div[class~="flex-[1_0_0]"][class~="items-center"][class~="gap-[12px]"]:has(> div[class~="shrink-0"][class~="pr-[32px]"]) div[class~="justify-between"] {
+    overflow-x: visible !important;
+    flex: none !important;
+    width: max-content !important;
+  }
 
   /* --- games strip (TEST AGAINST THE TIME): stack the three cards ------- */
   div[class*="h-[338px]"][class*="w-[1440px]"] {
@@ -688,6 +906,13 @@
   /* --- footer ------------------------------------------------------------ */
   footer > div > div { flex-wrap: wrap; padding-left: 16px; padding-right: 16px; }
 
+  /* --- headlines ticker: stays a single horizontal row, edge to edge ----
+     the generic footer/whitespace rules above would otherwise wrap it into
+     a stacked "HEADLINES" row + wrapped text underneath */
+  .aj-ticker { flex-wrap: nowrap !important; padding: 0 !important; }
+  .aj-ticker .whitespace-nowrap { white-space: nowrap !important; }
+  .aj-ticker [class*="bg-[#f82f4e]"] > div { padding-left: 12px !important; padding-right: 12px !important; }
+
   /* --- touch targets ------------------------------------------------------ */
   header a, footer a { min-height: 34px; }
   main a[href], main button { min-height: 32px; }
@@ -697,6 +922,26 @@
 /* MOBILE ONLY (below 768px) — typography + density                    */
 /* ------------------------------------------------------------------ */
 @media (max-width: 767px) {
+
+  /* FOR YOU list rows: thumbnail on top at full width, text beneath */
+  main div.flex:has(> a[class~="w-[224px]"][class~="h-[160px]"]) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+  main a[class~="w-[224px]"][class~="h-[160px]"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: clamp(180px, 52vw, 240px) !important;
+    flex: none !important;
+  }
+
+  /* vertical column-divider hairlines are meaningless once columns stack */
+  main img[src*="dmlld0JveD0iMCAwIDIg"] { display: none !important; }
+  main div:has(> img[src*="dmlld0JveD0iMCAwIDIg"]) { display: none !important; }
+
+  /* byline row (author avatar + name + timestamp) hidden on phones */
+  main [class~="h-[41px]"][class~="py-[16px]"][class~="gap-[8px]"] { display: none !important; }
 
   /* headline scale — hierarchy preserved, nothing clips */
   [class*="text-[64px]"] { font-size: clamp(28px, 7.5vw, 42px) !important; line-height: 1.1 !important; letter-spacing: -1px !important; }
@@ -722,6 +967,23 @@
   main .flex:has(> [class*="flex-[1_0_0]"]) > div[class*="w-[200px]"][class~="shrink-0"] {
     width: 128px !important;
     height: 96px !important;
+  }
+
+  /* 200x144 list thumbnails: once the row stacks, the picture fills the
+     column width instead of leaving a 143px gutter beside it */
+  main .flex:has(> a[class~="w-[200px]"][class~="h-[144px]"]),
+  main .flex:has(> div[class~="w-[200px]"][class~="h-[144px]"]) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+  main .flex > a[class~="w-[200px]"][class~="h-[144px]"],
+  main .flex > div[class~="w-[200px]"][class~="h-[144px]"] {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 200 / 144;
+    flex: none !important;
+    align-self: stretch;
   }
 
   main { gap: 44px !important; padding-top: 28px !important; }
@@ -765,4 +1027,11 @@ main [class~="sticky"] img[class~="size-[15px]"] {
 @media (prefers-reduced-motion: reduce) {
   .aj-nav-burger span { transition: none; }
   main [class~="sticky"] img[class~="size-[15px]"] { animation: none; }
+}
+
+/* Article meta bar: the byline column only fits when the bar has room. In the
+   narrow homepage rails, collapse it and keep SHARE / LISTEN / Summarize. */
+main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size; }
+@container (max-width: 560px) {
+  [class~="h-[43px]"][class~="justify-between"] > div:has(> [class~="pr-[33px]"]) { display: none; }
 }

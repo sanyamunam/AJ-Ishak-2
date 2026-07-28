@@ -41,17 +41,9 @@
     wave.appendChild(frag);
   }
 
-  /* The stories rail markup (partials/aj-foryou-stories.html) has no built-in scroll
-     behaviour, just a "next" button; wire it once the partial has loaded. */
-  function railControls() {
-    var rail = document.getElementById('fy-stories-rail');
-    var btn = document.getElementById('fy-stories-next');
-    var track = rail && rail.querySelector('.flex.min-w-px.flex-\\[1_0_0\\].items-center.gap-\\[12px\\]');
-    if (!btn || !track) return;
-    btn.addEventListener('click', function () {
-      track.scrollBy({ left: Math.round(track.clientWidth * 0.8), behavior: 'smooth' });
-    });
-  }
+  /* The stories rail (partials/aj-foryou-stories.html) scrolls natively now
+     (see #fy-stories-rail rules in aj-foryou.css) — nothing to wire up. */
+  function railControls() {}
 
   /* The volcano film card uses a real <video> instead of a static <img>;
      play it while hovered/focused, pause and rewind on leave. */
