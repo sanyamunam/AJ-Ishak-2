@@ -1035,3 +1035,134 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
 @container (max-width: 560px) {
   [class~="h-[43px]"][class~="justify-between"] > div:has(> [class~="pr-[33px]"]) { display: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* FOOTER — mobile optimization (below 768px)                          */
+/* ------------------------------------------------------------------ */
+@media (max-width: 767px) {
+
+  /* 1) Newsletter band: kill the desktop 120px gutters, full-width form */
+  footer > div > div[class*="px-[120px]"] {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-top: 48px !important;
+    gap: 24px !important;
+  }
+  footer div[class*="w-[1199px]"] { width: 100% !important; padding: 24px 0 !important; }
+  /* email input + Sign up: stacked, comfortable 48px touch height */
+  footer input[type="email"], footer input[placeholder*="email" i] {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 16px !important;   /* prevents iOS zoom-on-focus */
+  }
+  footer :is(div,form):has(> input[placeholder*="email" i]) {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    height: auto !important;
+    gap: 12px !important;
+  }
+  footer :is(div,form):has(> input[placeholder*="email" i]) > * {
+    width: 100% !important;
+    height: 48px !important;
+  }
+  footer button, footer [role="button"] { min-height: 48px !important; }
+
+  /* 2) White nav area: single column, tighter padding, clear rhythm */
+  footer div[class~="bg-white"][class*="gap-[80px]"] {
+    padding: 32px 20px !important;
+    gap: 32px !important;
+  }
+  footer div[class~="bg-white"] div[class*="gap-[96px]"] {
+    flex-direction: column !important;
+    gap: 32px !important;
+  }
+  /* logo keeps its aspect but shrinks */
+  footer div[class~="bg-white"] a[class*="h-[134.759px]"] {
+    height: 96px !important;
+    width: 58px !important;
+  }
+  /* the primary-links block + the three link columns stack full-width */
+  footer div[class~="bg-white"] div[class*="gap-[72px]"] {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  footer div[class~="bg-white"] div[class*="w-[320px]"] { width: 100% !important; }
+
+  /* primary links (About Us, …): larger type, 44px rows */
+  footer div[class~="bg-white"] div[class*="w-[320px]"] a {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 44px !important;
+  }
+  /* tighter rhythm between the primary links */
+  footer div[class~="bg-white"] div[class*="w-[320px]"] div[class*="gap-[12px]"] {
+    gap: 0 !important;
+  }
+
+  /* 3) Accordion columns (JS adds .aj-foot-acc on mobile) */
+  footer .aj-foot-acc { width: 100% !important; border-bottom: 1px solid #e6e6e6; }
+  footer .aj-foot-acc > p {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    cursor: pointer;
+    font-size: 15px !important;
+  }
+  footer .aj-foot-acc > p::after {
+    content: "+";
+    font-size: 20px;
+    font-weight: 400;
+    color: #1b1819;
+    transition: transform .25s ease;
+  }
+  footer .aj-foot-acc.open > p::after { content: "–"; }
+  footer .aj-foot-acc > div {
+    display: none !important;
+    padding-bottom: 12px;
+  }
+  footer .aj-foot-acc.open > div { display: flex !important; flex-direction: column !important; }
+  footer .aj-foot-acc a {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 40px !important;
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+  }
+  footer .aj-foot-acc > div { gap: 0 !important; }
+
+  /* 4) Social + address row: centered stack, icons stay ≥44px */
+  footer div[class*="w-[568px]"], footer div[class*="w-[442px]"] {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center;
+  }
+  footer a[class*="size-[50px]"] { width: 50px !important; height: 50px !important; }
+
+  /* 5) Legal bar: stacked + centered, © last, roomy targets */
+  footer div[class*="w-[1440px]"][class*="justify-between"] {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 16px 20px !important;
+  }
+  footer div[class*="w-[1440px]"][class*="justify-between"] > div {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px 16px !important;
+  }
+  footer div[class*="w-[1440px]"][class*="justify-between"] a {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 44px !important;
+  }
+  footer div[class*="w-[1440px]"][class*="justify-between"] > p { order: 99; padding: 8px 0 16px; }
+  /* the legal bar carries two identical link groups (left/right on desktop);
+     stacked on mobile they read as duplicates — keep only the first */
+  footer div[class*="w-[1440px]"][class*="justify-between"] > div:nth-of-type(2) { display: none !important; }
+}

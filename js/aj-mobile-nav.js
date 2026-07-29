@@ -121,3 +121,95 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+/* Mobile footer accordion: on narrow viewports the three footer link
+   columns ("Categories"-style heading + link list) collapse behind their
+   headings to save vertical space. Desktop is untouched — the class only
+   changes rendering inside the max-width:767px block in aj-responsive.css,
+   and taps are ignored when the viewport is wider. */
+(function () {
+  'use strict';
+
+  var MQ = window.matchMedia('(max-width: 767px)');
+
+  function columns() {
+    var white = [].slice.call(document.querySelectorAll('footer div')).filter(function (d) {
+      return /bg-white/.test(d.className) && /gap-\[80px\]/.test(d.className);
+    })[0];
+    if (!white) return [];
+    // a link column = flex-col whose first child is a <p> heading followed
+    // by a <div> containing only links
+    return [].slice.call(white.querySelectorAll('div')).filter(function (d) {
+      if (d.children.length !== 2) return false;
+      var p = d.children[0], list = d.children[1];
+      return p.tagName === 'P' && list.tagName === 'DIV' &&
+        list.querySelectorAll('a').length > 1 &&
+        /flex-col/.test(d.className);
+    });
+  }
+
+  function wire() {
+    var cols = columns();
+    if (!cols.length) return false;
+    cols.forEach(function (col) {
+      if (col.getAttribute('data-foot-acc')) return;
+      col.setAttribute('data-foot-acc', '1');
+      col.classList.add('aj-foot-acc');
+      var head = col.children[0];
+      head.setAttribute('role', 'button');
+      head.setAttribute('tabindex', '0');
+      head.setAttribute('aria-expanded', 'false');
+      var toggle = function () {
+        if (!MQ.matches) return;          // desktop: headings are inert
+        var open = col.classList.toggle('open');
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      head.addEventListener('click', toggle);
+      head.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+    });
+    return true;
+  }
+
+  function init() {
+    if (wire()) return;
+    var n = 0, iv = setInterval(function () { if (wire() || ++n > 20) clearInterval(iv); }, 300);
+  }
+
+  if (document.readyState === 'complete') init();
+  else window.addEventListener('load', init);
+})();
+
+/* Mobile capsules rail: the volcano card is the only one with a video
+   (demo), so on narrow viewports start the horizontal rail scrolled so
+   that card sits centered instead of clipped at the edge. */
+(function () {
+  'use strict';
+  var MQ = window.matchMedia('(max-width: 767px)');
+
+  function center() {
+    if (!MQ.matches) return true;
+    var imgs = [].slice.call(document.querySelectorAll('img[alt]')).filter(function (i) {
+      return /^philippines volcano erupts/i.test(i.alt || '');
+    });
+    if (!imgs.length) return false;
+    // the alt appears on two cards in the rail; the video (story) card is
+    // the one deeper in the rail — pick the match with the largest offset
+    var card = imgs.map(function (i) { return i.closest('a') || i.parentElement; })
+      .sort(function (a, b) { return b.offsetLeft - a.offsetLeft; })[0];
+    // nearest horizontally scrollable ancestor
+    var rail = card.parentElement;
+    while (rail && rail !== document.body && rail.scrollWidth <= rail.clientWidth + 4) rail = rail.parentElement;
+    if (!rail || rail === document.body) return false;
+    rail.scrollLeft = card.offsetLeft - (rail.clientWidth - card.offsetWidth) / 2;
+    return true;
+  }
+
+  function init() {
+    if (center()) return;
+    var n = 0, iv = setInterval(function () { if (center() || ++n > 20) clearInterval(iv); }, 300);
+  }
+
+  if (document.readyState === 'complete') init();
+  else window.addEventListener('load', init);
+})();

@@ -64,6 +64,14 @@
   var CROSS = '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>';
 
   function tpl(n) { return document.querySelector('[data-dc-tpl="' + n + '"]'); }
+  // Progress-cell tpl ids can collide with non-cell elements in the compiled
+  // template (e.g. the aside gets the same id as a SPAN quiz progress cell),
+  // so quiz cells are located specifically as SPANs.
+  function cellTpl(n) {
+    var nodes = document.querySelectorAll('[data-dc-tpl="' + n + '"]');
+    for (var i = 0; i < nodes.length; i++) if (nodes[i].tagName === 'SPAN') return nodes[i];
+    return null;
+  }
 
   /* Daily-Quiz mosaic icon — replaces the bundle's broken one. Black grid bg with
      inset cells so the gaps read as clean gridlines; purple + white cells, one black. */
@@ -98,7 +106,7 @@
 
   var state = { i: 0, results: [null, null, null], locked: false };
 
-  function cells() { return [tpl(126), tpl(127), tpl(128)]; }
+  function cells() { return [cellTpl(126), cellTpl(127), cellTpl(128)]; }
 
   function paintCells() {
     cells().forEach(function (c, idx) {
@@ -250,7 +258,7 @@
   /* ---- mount ---- */
   function tryMount() {
     fixQuizIcon();
-    if (!tpl(61) || !tpl(126)) return false;
+    if (!tpl(61) || !cellTpl(126)) return false;
     var section = tpl(29);
     if (!section || section.getAttribute('data-ajq')) return true;
     section.setAttribute('data-ajq', '1');
@@ -264,18 +272,32 @@
      of the Daily Quiz. The React bundle only switches views through its own
      "PLAY →" CTA (openXword), so we click that once it mounts. */
   function openCrosswordFromHash() {
-    if (location.hash !== '#crossword') return;
+    var deep = (location.hash === '#crossword') || (window.__AJ_HASH === '#crossword');
+    var releaseMask = function () {
+      // aljazeera-games.html adds this attribute early to hide the initial
+      // render; once the requested view is up we drop it so the page fades
+      // in as one clean state.
+      document.documentElement.removeAttribute('data-cw-load');
+    };
     var n = 0, iv = setInterval(function () {
-      if (++n > 60) return clearInterval(iv);
+      if (++n > 60) { clearInterval(iv); releaseMask(); return; }
       /* innerText = rendered text only (script source would false-positive) */
-      var quizShowing = /question \d\/3/i.test(document.body.innerText || '');
+      var body = document.body.innerText || '';
+      var quizShowing = /question \d\/3/i.test(body);
+      if (!deep) {
+        // Plain quiz load: fade in as soon as the quiz view has rendered.
+        if (quizShowing) { clearInterval(iv); releaseMask(); }
+        return;
+      }
+      var crosswordShowing = /across/i.test(body) && /down/i.test(body) && /check/i.test(body);
+      if (crosswordShowing) { clearInterval(iv); releaseMask(); return; }
       if (!quizShowing) return; // either not mounted yet, or already switched
       var cta = [].filter.call(document.querySelectorAll('div'), function (el) {
         return el.children.length <= 2 && /^PLAY\s*→$/.test((el.innerText || '').trim());
       }).pop();
       if (!cta) return;
       cta.click(); // keep retrying until the quiz view actually goes away
-    }, 300);
+    }, 120);
   }
 
   /* The bundle's DC logic sometimes dies mid-render (its nested JSON unpack

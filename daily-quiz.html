@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Al Jazeera — The Daily Quiz</title>
+<link rel="stylesheet" href="css/aj-games-skeleton.css">
+</head>
+<body>
+  <div class="aj-skel-wrap" role="status" aria-live="polite">
+    <div class="aj-skel-strip"></div>
+    <h1 class="aj-skel-title">The Daily Quiz</h1>
+    <p class="aj-skel-subtitle">Three questions from today's front page.</p>
+    <div class="aj-skel-panel">
+      <div class="aj-skel-timer"><span class="aj-skel-spinner" aria-hidden="true"></span>Loading quiz…</div>
+      <div class="aj-skel-quiz" aria-hidden="true">
+        <div class="q"></div>
+        <div class="a"></div>
+        <div class="a"></div>
+        <div class="a"></div>
+      </div>
+      <div class="aj-skel-status">Preparing today's questions</div>
+    </div>
+  </div>
+  <script>
+    /* Show the skeleton briefly, then hand off to the shared games bundle
+       (aljazeera-games.html defaults to the quiz view). We use setTimeout
+       rather than window.load because the destination itself does the
+       heavy unpacking — the delay's job is simply to guarantee the
+       skeleton paints instead of flashing to white. */
+    setTimeout(function () {
+      location.replace('aljazeera-games.html');
+    }, 500);
+  </script>
+</body>
+</html>

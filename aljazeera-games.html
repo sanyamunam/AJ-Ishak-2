@@ -6,12 +6,31 @@
   <title>Al Jazeera — Games</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #F58220; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
-    #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #F58220; z-index: 9999; }
-    #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
+    /* the bundler used to paint an orange full-screen splash + "Unpacking…"
+       badge before the React bundle rendered; hide both so the transition
+       to the games UI is invisible */
+    body { background: #ffffff; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    #__bundler_loading { display: none !important; }
+    #__bundler_thumbnail { display: none !important; }
     #__bundler_placeholder { color: #999; font-size: 14px; }
+    /* Deep-link mask: when the URL carries #crossword the Daily Quiz view
+       renders for a beat before aj-quiz.js flips over to the crossword.
+       html[data-cw-load] hides the games surface until the switch completes,
+       then aj-quiz.js removes the attribute. A skeleton overlay stays
+       visible while the mask is active so the user sees crossword-shaped
+       shimmer instead of a blank flash. */
+    html[data-cw-load] body { opacity: 0; }
   </style>
+  <style id="__cw_skel_css">
+    /* Deep-link loading rules — this block is copied verbatim into the
+       unpacked document (everything here MUST be scoped to html[data-cw-load]
+       or plain body opacity so it can't disturb the games page layout).
+       While data-cw-load is set the page is held invisible; when aj-quiz.js
+       removes it after the crossword mounts, the game fades in smoothly. */
+    body{opacity:1;transition:opacity .4s ease}
+    html[data-cw-load] body{opacity:0!important}
+  </style>
+  <script>document.documentElement.setAttribute('data-cw-load', '1');</script>
   <noscript>
     <style>#__bundler_loading { display: none; }</style>
     <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:10000;">
@@ -316,7 +335,29 @@ document.addEventListener('DOMContentLoaded', async function() {
     // createElement so they execute, awaiting onload for src scripts to
     // preserve ordering (React before ReactDOM before Babel before text/babel).
     const doc = new DOMParser().parseFromString(template, 'text/html');
+    // Persist the deep-link mask across the documentElement swap: the pre-swap
+    // <style> and html[data-cw-load] flag both live on the OLD documentElement
+    // and would be discarded, exposing the Daily Quiz UI for a beat before
+    // aj-quiz.js flips to the crossword. Re-stamp both into the new document
+    // so the mask stays continuous; aj-quiz.js removes the attribute on flip.
+    // A safety timeout releases the mask even if aj-quiz.js never runs.
+    const cwLoad = true; // hold-and-fade applies to both quiz and crossword loads
+    if (cwLoad) {
+      doc.documentElement.setAttribute('data-cw-load', '1');
+      // Carry the hold-invisible + fade-in rules into the unpacked document
+      // so the page stays hidden through the crossword flip, then fades in
+      // when aj-quiz.js removes the attribute.
+      const skelCss = document.getElementById('__cw_skel_css');
+      const maskStyle = doc.createElement('style');
+      maskStyle.id = '__cw_skel_css';
+      maskStyle.textContent = skelCss ? skelCss.textContent :
+        'body{opacity:1;transition:opacity .4s ease}html[data-cw-load] body{opacity:0!important}';
+      doc.head.insertBefore(maskStyle, doc.head.firstChild);
+    }
     document.documentElement.replaceWith(doc.documentElement);
+    if (cwLoad) {
+      setTimeout(function(){ document.documentElement.removeAttribute('data-cw-load'); }, 2500);
+    }
 
     // Resolve page-frame markers: mint this document's own blob for each
     // framed page — from local text when this is the root, otherwise by

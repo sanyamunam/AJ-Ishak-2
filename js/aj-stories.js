@@ -24,6 +24,8 @@
     '.ajs-card{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:linear-gradient(180deg,#cfcfcf,#8f8f8f);border-radius:2px}',
     '.ajs-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}',
     '.ajs-card img.on{opacity:1}',
+    '.ajs-card video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}',
+    '.ajs-card video.on{opacity:1}',
     '.ajs-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.42) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 58%,rgba(0,0,0,.72) 100%);pointer-events:none}',
 
     '.ajs-head{position:absolute;top:14px;left:16px;right:16px;display:flex;align-items:center;gap:10px;z-index:2;color:#fff}',
@@ -41,7 +43,13 @@
     '@media (prefers-reduced-motion: reduce){.ajs-veil,.ajs-card img{transition:none}}'
   ].join('\n');
 
-  var slides = [];      // {src, title, src2x}
+  /* Cards whose image alt matches an entry here play a video slide in the
+     viewer instead of a still. Matched case-insensitively on alt prefix. */
+  var VIDEO_MAP = [
+    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.mp4' }
+  ];
+
+  var slides = [];      // {src, title, dur, video?}
   var idx = 0, timer = null, startTs = 0, elapsed = 0, paused = false, veil = null;
 
   function addStyle() {
@@ -66,8 +74,12 @@
       var caps = [].slice.call(host.querySelectorAll('*')).filter(function (e) {
         return e.children.length === 0 && e.textContent.trim().length > 6 && !/min\s?\d+sec/i.test(e.textContent);
       });
-      var title = caps.length ? caps[0].textContent.trim() : 'World Cup 2026 — Week 1 Round Up';
-      cards.push({ host: host, src: img.currentSrc || img.src, title: title, dur: d.textContent.trim() });
+      var title = caps.length ? caps[0].textContent.trim() : (img.alt || 'World Cup 2026 — Week 1 Round Up');
+      var alt = (img.alt || '').toLowerCase(), video = null;
+      for (var v = 0; v < VIDEO_MAP.length; v++) {
+        if (alt.indexOf(VIDEO_MAP[v].alt) === 0) { video = VIDEO_MAP[v].src; break; }
+      }
+      cards.push({ host: host, src: img.currentSrc || img.src, title: title, dur: d.textContent.trim(), video: video });
     });
     return cards;
   }
@@ -85,6 +97,7 @@
         '<div class="ajs-bars"></div>' +
         '<div class="ajs-card">' +
           '<img alt="">' +
+          '<video muted playsinline webkit-playsinline preload="auto"></video>' +
           '<div class="ajs-head"><span class="ajs-ava"></span><span class="ajs-src"></span><span class="ajs-time"></span></div>' +
           '<div class="ajs-title"></div>' +
           '<div class="ajs-nav ajs-prev"></div><div class="ajs-nav ajs-next"></div>' +
@@ -125,11 +138,28 @@
   function render() {
     var s = slides[idx];
     var img = veil.querySelector('.ajs-card img');
+    var vid = veil.querySelector('.ajs-card video');
     img.classList.remove('on');
-    var pre = new Image();
-    pre.onload = function () { img.src = s.src; requestAnimationFrame(function () { img.classList.add('on'); }); };
-    pre.onerror = function () { img.src = s.src; img.classList.add('on'); };
-    pre.src = s.src;
+    vid.classList.remove('on');
+    vid.pause();
+    if (s.video) {
+      // Video slide: play inline, advance when the clip ends.
+      img.style.display = 'none';
+      vid.style.display = '';
+      if (vid.getAttribute('src') !== s.video) vid.src = s.video;
+      else vid.currentTime = 0;
+      vid.onended = function () { go(idx + 1); };
+      vid.play().catch(function () {});
+      requestAnimationFrame(function () { vid.classList.add('on'); });
+    } else {
+      vid.style.display = 'none';
+      vid.onended = null;
+      img.style.display = '';
+      var pre = new Image();
+      pre.onload = function () { img.src = s.src; requestAnimationFrame(function () { img.classList.add('on'); }); };
+      pre.onerror = function () { img.src = s.src; img.classList.add('on'); };
+      pre.src = s.src;
+    }
 
     veil.querySelector('.ajs-src').textContent = 'Al Jazeera';
     veil.querySelector('.ajs-ava').textContent = 'AJ';
@@ -152,6 +182,18 @@
     var fill = veil.querySelectorAll('.ajs-bar')[idx].querySelector('i');
     elapsed = 0; startTs = performance.now(); paused = false;
     fill.style.transition = 'none'; fill.style.width = '0';
+    var s = slides[idx];
+    if (s.video) {
+      // Video slide: bar tracks playback position; 'ended' handles advance.
+      var vid = veil.querySelector('.ajs-card video');
+      (function vtick() {
+        if (!veil) return;
+        var d = vid.duration;
+        if (d && isFinite(d)) fill.style.width = (Math.min(1, vid.currentTime / d) * 100).toFixed(2) + '%';
+        timer = requestAnimationFrame(vtick);
+      })();
+      return;
+    }
     (function tick(now) {
       if (!veil) return;
       if (paused) { startTs = now - elapsed; timer = requestAnimationFrame(tick); return; }
@@ -163,8 +205,15 @@
     })(performance.now());
   }
 
-  function pause() { paused = true; }
-  function resume() { if (paused) { paused = false; } }
+  function pause() {
+    paused = true;
+    if (veil && slides[idx] && slides[idx].video) veil.querySelector('.ajs-card video').pause();
+  }
+  function resume() {
+    if (!paused) return;
+    paused = false;
+    if (veil && slides[idx] && slides[idx].video) veil.querySelector('.ajs-card video').play().catch(function () {});
+  }
 
   function go(n) {
     if (!veil) return;
@@ -188,7 +237,7 @@
   function wire() {
     var cards = collectCards();
     if (!cards.length) return false;
-    var list = cards.map(function (c) { return { src: c.src, title: c.title, dur: c.dur }; });
+    var list = cards.map(function (c) { return { src: c.src, title: c.title, dur: c.dur, video: c.video }; });
     cards.forEach(function (c, i) {
       if (c.host.getAttribute('data-ajs')) return;
       c.host.setAttribute('data-ajs', '1');
