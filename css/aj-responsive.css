@@ -1042,13 +1042,11 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
 @media (max-width: 767px) {
 
   /* 1) Newsletter band: kill the desktop 120px gutters, full-width form */
-  footer > div > div[class*="px-[120px]"] {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-top: 48px !important;
-    gap: 24px !important;
+  footer div[class*="px-[120px]"][class*="bg-gradient"] {
+    padding: 32px 20px 8px !important;
+    gap: 12px !important;
   }
-  footer div[class*="w-[1199px]"] { width: 100% !important; padding: 24px 0 !important; }
+  footer div[class*="w-[1199px]"] { width: 100% !important; padding: 12px 0 !important; }
   /* email input + Sign up: stacked, comfortable 48px touch height */
   footer input[type="email"], footer input[placeholder*="email" i] {
     width: 100% !important;
@@ -1070,8 +1068,8 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
 
   /* 2) White nav area: single column, tighter padding, clear rhythm */
   footer div[class~="bg-white"][class*="gap-[80px]"] {
-    padding: 32px 20px !important;
-    gap: 32px !important;
+    padding: 24px 20px !important;
+    gap: 20px !important;
   }
   footer div[class~="bg-white"] div[class*="gap-[96px]"] {
     flex-direction: column !important;
@@ -1148,8 +1146,8 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
     width: 100% !important;
     flex-direction: column !important;
     align-items: center !important;
-    gap: 4px !important;
-    padding: 16px 20px !important;
+    gap: 0 !important;
+    padding: 4px 20px 8px !important;
   }
   footer div[class*="w-[1440px]"][class*="justify-between"] > div {
     flex-wrap: wrap !important;
@@ -1159,9 +1157,9 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
   footer div[class*="w-[1440px]"][class*="justify-between"] a {
     display: flex !important;
     align-items: center !important;
-    min-height: 44px !important;
+    min-height: 40px !important;
   }
-  footer div[class*="w-[1440px]"][class*="justify-between"] > p { order: 99; padding: 8px 0 16px; }
+  footer div[class*="w-[1440px]"][class*="justify-between"] > p { order: 99; padding: 0 0 8px; }
   /* the legal bar carries two identical link groups (left/right on desktop);
      stacked on mobile they read as duplicates — keep only the first */
   footer div[class*="w-[1440px]"][class*="justify-between"] > div:nth-of-type(2) { display: none !important; }
