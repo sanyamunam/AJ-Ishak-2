@@ -31,6 +31,11 @@
 :where(.fy main a) { color: inherit; text-decoration: none; }
 :where(.fy main img) { display: block; max-width: 100%; }
 :where(.fy main button) { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+/* the reset above is unlayered, so it always beats the Tailwind border-*
+   utilities (@layer utilities loses to unlayered CSS regardless of
+   specificity) — toolbar buttons like LISTEN/Summarize need their divider
+   back after that reset zeroes it out */
+.fy main button[class*="border-r"] { border-right: 1px solid #dfdfdf; }
 
 .fy-shell {
   width: 100%;
@@ -1517,3 +1522,5 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
 
 .pl-\[38px\] { padding-left: 38px; }
 .pr-\[39px\] { padding-right: 39px; }
+.pl-\[16px\] { padding-left: 16px; }
+.pr-\[16px\] { padding-right: 16px; }

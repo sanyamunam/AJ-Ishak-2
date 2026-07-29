@@ -29,7 +29,10 @@
     st.id = 'aj-chrome-bg';
     st.textContent =
       'body,#dc-root,#dc-root > .sc-host,#dc-root > .sc-host > div{background:#fff!important}' +
-      '#dc-root [data-body-row]{background:transparent!important}';
+      '#dc-root [data-body-row]{background:transparent!important}' +
+      /* the host must grow with its content — a stale height:100% rule can win
+         the cascade and let the dashboard spill under the injected footer */
+      '#dc-root,#dc-root > .sc-host{height:auto!important}';
     document.head.appendChild(st);
   }
 
