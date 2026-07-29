@@ -46,7 +46,8 @@
   /* Cards whose image alt matches an entry here play a video slide in the
      viewer instead of a still. Matched case-insensitively on alt prefix. */
   var VIDEO_MAP = [
-    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.mp4' }
+    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.mp4' },
+    { alt: 'dr hussam abu safia', src: 'assets/dr-hussam.mp4' }
   ];
 
   var slides = [];      // {src, title, dur, video?}

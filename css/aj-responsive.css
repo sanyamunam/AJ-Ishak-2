@@ -40,7 +40,8 @@ div[class~="items-center"][class~="gap-[40px]"]:has(> div[class~="w-[360px]"]) {
 /* ------------------------------------------------------------------ */
 @media (max-width: 1023px) {
 
-  /* the desktop pages render at zoom .9 (inline style) — real devices don't */
+  /* desktop pages scale to fit their 1920px canvas (js/aj-fit.js sets an
+     inline body zoom) — real devices use the responsive layout instead */
   body { zoom: 1 !important; }
 
   /* hard guard against stray horizontal scroll while sections adapt */

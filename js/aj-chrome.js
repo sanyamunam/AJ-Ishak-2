@@ -132,7 +132,7 @@
   }
 
   function ensureScripts() {
-    ['js/aj-ask.js', 'js/aj-mobile-nav.js'].forEach(function (src) {
+    ['js/aj-ask.js', 'js/aj-mobile-nav.js', 'js/aj-fit.js'].forEach(function (src) {
       if (document.querySelector('script[src^="' + src + '"]')) return;
       var s = document.createElement('script');
       s.src = src + '?v=1';
