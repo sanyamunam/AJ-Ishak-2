@@ -1,0 +1,344 @@
+/* ============================================================================
+   THE SPELLING BEE — Al Jazeera Games Desk.
+   Speaks the site's own design language: Lora serif display over Anybody
+   uppercase UI, black ink on white, hairline rules rgba(0,0,0,.2), the ◆
+   section marker, crossword-style bordered square tiles (games strip), sharp
+   rectangles everywhere, and a single accent — AJ orange #fa9000 (gold
+   #e8b53a for sign-in, matching the Globe Desk CTA). No emojis, no gradients,
+   no idle motion: every animation answers an interaction.
+   ========================================================================== */
+
+:root {
+  --ink: #111118;
+  --ink-2: #202020;
+  --grey: #5a5a5a;
+  --hair: rgba(0, 0, 0, .2);
+  --hair-soft: rgba(0, 0, 0, .12);
+  --cream: #faf3e6;
+  --orange: #fa9000;
+  --red: #ff435f;
+  --gold: #e8b53a;
+  --serif: 'Lora', Georgia, serif;
+  --sans: 'Anybody', Arial, Helvetica, sans-serif;
+  /* strong custom curves — stock CSS easings are too weak */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.bee-page * { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #fff; }
+.bee-page {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: #fff;
+  min-height: 60vh;
+}
+/* :where() keeps this reset at zero specificity so component styles
+   (.aj-btn, .c3-play, .key-primary…) always outrank it */
+:where(.bee-page) button { font-family: inherit; cursor: pointer; background: none; border: 0; color: inherit; }
+.bee-wrap { max-width: 1440px; margin: 0 auto; padding: 64px 48px 96px; }
+
+/* ---- shared atoms (mirroring the site's buttons & links) ---------------- */
+.aj-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--ink); color: #fff;
+  font: 600 12px/1.15 var(--sans); letter-spacing: .45px; text-transform: uppercase;
+  padding: 14px 22px;
+  transition: background .2s ease, transform 160ms var(--ease-out);
+}
+.aj-btn:hover { background: #000; }
+.aj-btn:active { transform: scale(.97); }
+.aj-btn .arr { font-size: 13px; transform: translateY(-.5px); }
+.aj-btn-gold { background: var(--gold); color: var(--ink); font-weight: 800; }
+.aj-btn-gold:hover { background: #eec158; }
+.aj-link {
+  font: 600 12px/1.3 var(--sans); letter-spacing: .4px; text-transform: uppercase;
+  color: var(--ink); border-bottom: 1px solid var(--hair);
+  padding-bottom: 2px; transition: border-color .2s ease, color .2s ease;
+}
+.aj-link:hover { border-color: var(--ink); }
+.aj-link-dim { color: rgba(255, 255, 255, .6); border-color: rgba(255, 255, 255, .25); }
+.aj-link-dim:hover { color: #fff; border-color: #fff; }
+
+/* ---- section masthead (homepage "◆ CAPSULES" pattern) ------------------- */
+.bee-sechead {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  border-bottom: 2px solid var(--ink); padding-bottom: 8px;
+}
+.bs-left { display: flex; align-items: center; gap: 10px; }
+.bs-diamond { width: 11px; height: 11px; background: var(--ink); transform: rotate(45deg); }
+.bee-sechead h1 { font: 600 18px/32px var(--sans); text-transform: uppercase; letter-spacing: .02em; }
+.bs-meta { font: 600 11px/1.4 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--grey); }
+
+/* ---- cover: one field of colour, one action ------------------------------ */
+#bee-cover { padding-top: 32px; }
+#bee-cover.is-out { animation: coverFade .35s ease forwards; }
+@keyframes coverFade { to { opacity: 0; } }
+
+.c3-hero {
+  position: relative; overflow: hidden;
+  background: var(--orange);
+  text-align: center;
+  padding: 64px 24px 190px;
+}
+.c3-badge {
+  width: 88px; height: 88px; margin: 0 auto;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  transform: rotate(-3deg);
+  box-shadow: 6px 6px 0 rgba(17, 17, 24, .18);
+}
+.c3-badge img { width: 62px; height: 62px; object-fit: contain; }
+.c3-word { font: 700 clamp(42px, 4.6vw, 60px)/1.05 var(--serif); color: var(--ink); margin-top: 24px; }
+.c3-kick { font: 700 10.5px/1 var(--sans); letter-spacing: .34em; text-transform: uppercase; color: var(--ink); opacity: .65; margin-top: 12px; }
+.c3-line { font: 500 clamp(17px, 1.8vw, 21px)/1.5 var(--serif); font-style: italic; color: var(--ink); margin: 22px auto 0; max-width: 480px; }
+.c3-line b { font-weight: 700; }
+.c3-play {
+  display: inline-flex; align-items: center; gap: 14px;
+  margin-top: 32px;
+  background: var(--ink); color: #fff;
+  font: 800 15px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase;
+  padding: 22px 64px;
+  box-shadow: 6px 6px 0 rgba(17, 17, 24, .18);
+  transition: transform 180ms var(--ease-out), box-shadow 180ms ease, background .2s ease;
+}
+.c3-play:hover { background: #000; transform: translate(-2px, -2px); box-shadow: 9px 9px 0 rgba(17, 17, 24, .22); }
+.c3-play:active { transform: translate(0, 0); box-shadow: 4px 4px 0 rgba(17, 17, 24, .2); }
+.c3-play .arr { font-size: 16px; }
+.c3-signin { margin-top: 18px; color: var(--ink); border-color: rgba(17, 17, 24, .4); }
+.c3-signin:hover { border-color: var(--ink); }
+.c3-meta { margin-top: 22px; font: 700 10px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--ink); opacity: .65; }
+
+/* the illustration is the game itself: today's tiles, spilled along the edge */
+.c3-scatter { position: absolute; left: 0; right: 0; bottom: 0; height: 140px; pointer-events: none; }
+.c3-scatter .st {
+  position: absolute; width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font: 700 24px/1 var(--sans); font-style: normal;
+  opacity: 0; translate: 0 14px;
+  transition: opacity 350ms ease, translate 450ms var(--ease-out);
+}
+.c3-scatter .st.in { opacity: 1; translate: 0 0; }
+.c3-scatter .ink { background: var(--ink); color: #fff; }
+.c3-scatter .wh { background: #fff; color: var(--orange); box-shadow: 4px 4px 0 rgba(17, 17, 24, .15); }
+.c3-scatter .cr { background: var(--cream); color: var(--ink); }
+.c3-scatter .sm { width: 46px; height: 46px; font-size: 19px; }
+.c3-scatter .dia { width: 18px; height: 18px; background: var(--ink); rotate: 45deg; }
+.c3-scatter .dia.red { background: var(--red); }
+
+
+/* ---- game meta: rank ladder ---------------------------------------------- */
+#bee-game { padding-top: 40px; animation: gameIn .35s ease both; }
+@keyframes gameIn { from { opacity: 0; } }
+.game-meta { display: flex; align-items: center; gap: 26px; }
+.rank-now { flex: none; min-width: 190px; }
+.rank-now b { display: block; font: 700 20px/1.15 var(--serif); }
+.rank-now span { display: block; margin-top: 3px; font: 600 10.5px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.rank-track { position: relative; flex: 1; height: 22px; }
+.rank-track .bar, .rank-track .fill {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%);
+  background: var(--hair-soft);
+}
+.rank-track .fill { right: auto; width: 0; background: var(--orange); transition: width 450ms var(--ease-out); }
+.rank-track .node {
+  position: absolute; top: 50%; width: 8px; height: 8px;
+  transform: translate(-50%, -50%) rotate(45deg);            /* the ◆ marker, small */
+  background: #fff; border: 1.5px solid var(--hair);
+  transition: background .25s ease, border-color .25s ease, transform .25s ease;
+}
+.rank-track .node.hit { background: var(--ink); border-color: var(--ink); }
+.rank-track .node.now { background: var(--orange); border-color: var(--orange); transform: translate(-50%, -50%) rotate(45deg) scale(1.45); }
+.game-chips { flex: none; display: flex; gap: 8px; }
+.chip {
+  font: 600 11px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--hair); padding: 10px 14px;
+  transition: border-color .2s ease, background .2s ease, transform 160ms var(--ease-out);
+}
+.chip:hover { border-color: var(--ink); }
+.chip:active { transform: scale(.97); }
+.chip b { color: var(--orange); }
+.chip-dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip-dark:hover { background: #000; }
+.chip-dark.is-user { background: #fff; color: var(--ink); border-color: var(--ink); }
+.chip-dark.is-user b { color: var(--orange); }
+
+.rank-nextline { margin-top: 8px; font: 600 10.5px/1.5 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: var(--grey); }
+.rank-nextline b { color: var(--ink); }
+
+/* ---- play column ---------------------------------------------------------- */
+.game-cols { display: flex; gap: 64px; margin-top: 36px; align-items: stretch; }
+.playfield {
+  flex: 1.15; display: flex; flex-direction: column; align-items: center;
+  background: var(--cream);                                  /* the games-strip panel tint */
+  padding: 44px 32px 40px;
+}
+.entry-row { height: 72px; display: flex; align-items: center; }
+.entry {
+  display: flex; align-items: baseline; min-height: 52px;
+  font: 600 clamp(30px, 3vw, 40px)/1 var(--serif); letter-spacing: .02em; text-transform: capitalize;
+}
+.entry .ch.req { color: var(--orange); }
+.entry .caret { width: 2px; height: .95em; margin-left: 4px; background: var(--ink); align-self: center; animation: caretBlink 1.1s steps(1) infinite; }
+@keyframes caretBlink { 50% { opacity: 0; } }
+.entry.shake { animation: entryShake .35s ease; }
+@keyframes entryShake { 25% { transform: translateX(-6px); } 55% { transform: translateX(5px); } 85% { transform: translateX(-2px); } }
+
+/* letter case: crossword-fragment rows of bordered square tiles (2·3·2) */
+.case { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.case .row { display: flex; gap: 8px; justify-content: center; }
+.case .tile {
+  width: 86px; height: 86px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1.5px solid rgba(0, 0, 0, .25);   /* the mini-crossword cell */
+  font: 700 30px/1 var(--sans); text-transform: uppercase; color: var(--ink);
+  user-select: none; -webkit-user-select: none;
+  transition: background .15s ease, transform 120ms var(--ease-out), opacity 120ms ease;
+}
+.case .tile:active { transform: scale(.95); }   /* pointer feedback; keyboard stays still */
+.case .tile.center { background: var(--orange); border-color: var(--orange); color: #fff; }
+.case .tile.swap { animation: tileSwap 120ms ease; }
+@keyframes tileSwap { 0% { opacity: 0; } }
+@media (hover: hover) and (pointer: fine) {
+  .case .tile:hover { background: #f3ede0; }
+  .case .tile.center:hover { background: #e98600; }
+}
+.case.flash .tile { background: #fff7e8; border-color: var(--orange); }
+.case.flash .tile.center { background: var(--orange); }
+
+.keys { display: flex; align-items: center; gap: 10px; margin-top: 30px; }
+.key {
+  font: 600 12px/1.15 var(--sans); letter-spacing: .45px; text-transform: uppercase;
+  border: 1px solid var(--ink); background: #fff; color: var(--ink);
+  padding: 13px 22px;
+  transition: background .2s ease, color .2s ease, transform 160ms var(--ease-out);
+}
+.key:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .key:hover { background: var(--ink); color: #fff; }
+}
+.key-ico { padding: 12px 15px; display: inline-flex; }
+.key-primary { background: var(--ink); color: #fff; }
+.key-primary:hover { background: #000; }
+.play-tip { margin-top: 24px; font: 600 10px/1.5 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--grey); }
+
+/* ---- copy rail (Globe Desk list rhythm: hairlines, uppercase labels) ----- */
+.copyrail { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.rail-head {
+  display: flex; align-items: baseline; gap: 14px;
+  border-bottom: 2px solid var(--ink); padding-bottom: 10px;
+}
+.rail-head h3 { font: 700 18px/1.2 var(--serif); }
+.rail-count { font: 600 10.5px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--grey); margin-right: auto; }
+.tips-slips:not(:empty) { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 0 2px; }
+.tips-slips .slip {
+  font: 700 12px/1 var(--sans); letter-spacing: .2em;
+  border: 1px dashed var(--orange); color: var(--ink);
+  padding: 9px 11px; animation: slipIn 250ms var(--ease-out);
+}
+@keyframes slipIn { from { opacity: 0; transform: translateY(5px); } }
+.found-list { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; align-content: flex-start; }
+.found-list li {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 13px/1 var(--sans); letter-spacing: .03em; text-transform: capitalize;
+  border: 1px solid var(--hair); padding: 9px 13px; background: #fff;
+  animation: wordIn 250ms var(--ease-out);
+}
+.found-list li b { font: 700 10px/1 var(--sans); color: var(--orange); }
+.found-list li.pan { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: inset 3px 0 0 var(--orange); }
+.found-list li.pan b { color: var(--orange); }
+@keyframes wordIn { from { opacity: 0; transform: translateY(6px); } }
+.found-empty { padding-top: 18px; font: 500 14px/1.6 var(--serif); font-style: italic; color: var(--grey); }
+
+/* ---- toasts: sharp editorial bars ---------------------------------------- */
+.toast-lane { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast {
+  font: 600 12px/1.15 var(--sans); letter-spacing: .1em; text-transform: uppercase;
+  background: var(--ink); color: #fff; padding: 13px 20px;
+  animation: toastIn 250ms var(--ease-out), toastOut 200ms ease 1.8s forwards;
+}
+.toast.good { background: var(--orange); color: var(--ink); }
+.toast.gold { background: var(--ink); color: #fff; box-shadow: inset 4px 0 0 var(--orange); padding: 15px 24px; letter-spacing: .16em; }
+@keyframes toastIn { from { transform: translateY(-10px); opacity: 0; } }
+@keyframes toastOut { to { transform: translateY(-8px); opacity: 0; } }
+
+/* confetti: brief fall of brand squares — pangram & finale only */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 55; overflow: hidden; }
+.confetti i {
+  position: absolute; width: 7px; height: 7px; top: -14px;
+  background: var(--c, var(--orange));
+  animation: confFall var(--dur, 2.2s) cubic-bezier(.3, .4, .6, 1) forwards;
+}
+@keyframes confFall { to { top: 104%; transform: rotate(300deg) translateX(var(--dx, 0)); opacity: .15; } }
+
+/* rank-up stamp: quiet card, never blocks input */
+.rank-pop {
+  position: fixed; left: 50%; top: 38%; z-index: 70;
+  transform: translate(-50%, -50%);
+  background: #fff; border: 2px solid var(--ink);
+  padding: 22px 40px; text-align: center; pointer-events: none;
+  box-shadow: 8px 8px 0 rgba(17, 17, 24, .12);
+  animation: rankPopIn 300ms var(--ease-out);
+}
+.rank-pop i { display: block; font: 600 9.5px/1 var(--sans); letter-spacing: .34em; text-transform: uppercase; color: var(--orange); font-style: normal; }
+.rank-pop b { display: block; margin-top: 8px; font: 700 26px/1.1 var(--serif); }
+.rank-pop.out { animation: rankPopOut .35s ease forwards; }
+@keyframes rankPopIn { from { transform: translate(-50%, -46%); opacity: 0; } }
+@keyframes rankPopOut { to { transform: translate(-50%, -56%); opacity: 0; } }
+
+/* ---- modal: white panel under a heavy rule, site-style ------------------- */
+.bee-veil[hidden] { display: none; }
+.bee-veil {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(17, 17, 24, .5);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: veilIn .25s ease;
+}
+@keyframes veilIn { from { opacity: 0; } }
+.bee-modal {
+  background: #fff; border-top: 4px solid var(--ink);
+  max-width: 480px; width: 100%; padding: 34px 38px 32px; position: relative;
+  max-height: 86vh; overflow-y: auto;
+  animation: modalIn 250ms var(--ease-out);
+}
+@keyframes modalIn { from { transform: translateY(12px) scale(.97); opacity: 0; } }
+.bee-modal .mx { position: absolute; top: 14px; right: 16px; font-size: 15px; color: var(--grey); }
+.bee-modal .mx:hover { color: var(--ink); }
+.bee-modal .mkick { font: 600 10px/1 var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--orange); }
+.bee-modal h3 { font: 700 30px/1.15 var(--serif); margin-top: 10px; }
+.bee-modal .msub { margin-top: 10px; font: 500 15px/1.6 var(--serif); font-style: italic; color: var(--grey); }
+.mstats { display: flex; margin-top: 24px; border: 1px solid var(--hair); }
+.mstats div { flex: 1; padding: 14px 16px; border-right: 1px solid var(--hair); }
+.mstats div:last-child { border-right: 0; }
+.mstats span { display: block; font: 600 9.5px/1.3 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.mstats b { display: block; margin-top: 6px; font: 700 24px/1 var(--serif); }
+.mcal { display: flex; gap: 5px; margin-top: 22px; }
+.mcal i { flex: 1; height: 20px; background: rgba(0, 0, 0, .08); }
+.mcal i.on { background: var(--orange); }
+.mcal-cap { margin-top: 8px; font: 600 9.5px/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--grey); }
+.mrow { display: flex; align-items: center; gap: 20px; margin-top: 28px; flex-wrap: wrap; }
+.minput {
+  width: 100%; margin-top: 20px; font: 600 15px/1.2 var(--sans);
+  padding: 14px 16px; border: 1px solid var(--hair); background: #fff; outline: none;
+}
+.minput:focus { border-color: var(--ink); }
+
+/* ---- responsive ----------------------------------------------------------- */
+@media (max-width: 1023px) {
+  .bee-wrap { padding: 40px 16px 64px; }
+  .c3-hero { padding: 48px 18px 150px; }
+  .c3-play { padding: 19px 44px; }
+  .c3-scatter .st { width: 48px; height: 48px; font-size: 19px; }
+  .c3-scatter .sm { width: 36px; height: 36px; font-size: 15px; }
+  .game-cols { flex-direction: column; gap: 36px; }
+  .game-meta { flex-wrap: wrap; gap: 14px; }
+  .rank-now { min-width: 0; display: flex; align-items: baseline; gap: 12px; width: 100%; }
+  .rank-track { order: 3; flex: 1 1 100%; }
+  .game-chips { order: 2; margin-left: auto; }
+  .case .tile { width: 72px; height: 72px; font-size: 26px; }
+  .rail-login { margin-top: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bee-page *, .bee-page *::before, .bee-page *::after { animation-duration: .01s !important; transition-duration: .01s !important; }
+  .entry .caret { animation: none; }
+  .confetti { display: none; }
+}

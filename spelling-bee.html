@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Spelling Bee — Al Jazeera</title>
+<link rel="icon" href="assets/Spelling%20Bee.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wght@400;600;700;800&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap">
+<link rel="stylesheet" href="css/aj-bee.css?v=2">
+</head>
+<body>
+
+<main class="bee-page">
+  <div class="bee-wrap">
+
+    <!-- section masthead, homepage pattern: ◆ TITLE over a heavy rule -->
+    <!-- div, not <header>: the chrome injector strips stray header tags -->
+    <div class="bee-sechead">
+      <div class="bs-left"><span class="bs-diamond" aria-hidden="true"></span><h1>The Spelling Bee</h1></div>
+      <p class="bs-meta" id="head-meta"></p>
+    </div>
+
+    <!-- ================= COVER — one field of colour, one action ================= -->
+    <section id="bee-cover" aria-label="Today's puzzle">
+      <div class="c3-hero">
+        <div class="c3-badge"><img src="assets/Spelling%20Bee.png" alt=""></div>
+        <h2 class="c3-word">Spelling Bee</h2>
+        <p class="c3-kick">The daily word hunt</p>
+        <p class="c3-line"><b id="c2-words">68</b> words are hiding in today’s seven letters.</p>
+        <button id="cover-play" class="c3-play" type="button">Play<span class="arr" aria-hidden="true">→</span></button>
+        <div><button id="cover-signin" class="aj-link c3-signin" type="button">Sign in to keep your streak</button></div>
+        <p class="c3-meta"><span id="c2-no"></span> · New letters in <b id="c2-countdown">—</b></p>
+
+        <!-- the illustration is the game itself: today's tiles, spilled -->
+        <div class="c3-scatter" id="c3-scatter" aria-hidden="true">
+          <i class="st ink"  style="left:4%;  bottom:-14px; transform:rotate(-8deg)">A</i>
+          <i class="st wh"   style="left:12%; bottom:26px;  transform:rotate(5deg)">L</i>
+          <i class="st dia"  style="left:20%; bottom:8px"></i>
+          <i class="st cr"   style="left:24%; bottom:-18px; transform:rotate(10deg)">D</i>
+          <i class="st ink"  style="left:33%; bottom:14px;  transform:rotate(-4deg)">E</i>
+          <i class="st dia red" style="left:41%; bottom:44px"></i>
+          <i class="st wh"   style="left:45%; bottom:-10px; transform:rotate(-7deg)">H</i>
+          <i class="st ink sm" style="left:56%; bottom:22px; transform:rotate(9deg)">I</i>
+          <i class="st dia"  style="left:64%; bottom:-2px"></i>
+          <i class="st cr"   style="left:69%; bottom:10px;  transform:rotate(-11deg)">N</i>
+          <i class="st ink"  style="left:79%; bottom:-16px; transform:rotate(6deg)">E</i>
+          <i class="st wh sm" style="left:88%; bottom:30px; transform:rotate(-5deg)">A</i>
+          <i class="st dia red" style="left:94%; bottom:-4px"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section id="bee-game" hidden aria-label="Spelling Bee game">
+
+      <div class="game-meta">
+        <div class="rank-now"><b id="rank-label">Newcomer</b><span id="score-label">0 pts</span></div>
+        <div class="rank-track" id="rank-track"></div>
+        <div class="game-chips">
+          <button id="streak-chip" class="chip" type="button">Streak · <b id="streak-n">0</b></button>
+          <button id="game-signin" class="chip chip-dark" type="button">Sign in</button>
+        </div>
+      </div>
+      <p class="rank-nextline" id="rank-next"></p>
+
+      <div class="game-cols">
+
+        <div class="playfield">
+          <div class="entry-row"><div class="entry" id="entry" aria-live="polite"><span class="caret"></span></div></div>
+          <div class="case" id="dial" aria-label="Today's letters"></div>
+          <div class="keys">
+            <button class="key" id="key-del" type="button">Delete</button>
+            <button class="key key-ico" id="key-shuffle" type="button" aria-label="Shuffle letters">
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M8 2.5A5.5 5.5 0 1 0 13.5 8H15A7 7 0 1 1 8 1v1.5zM8 0v5.2l4.2-2.6L8 0z"/></svg>
+            </button>
+            <button class="key key-primary" id="key-enter" type="button">Enter</button>
+          </div>
+          <p class="play-tip">Type or tap · space shuffles<br>Four letters minimum · every word uses the centre letter</p>
+        </div>
+
+        <aside class="copyrail" aria-label="Words you have found">
+          <div class="rail-head">
+            <h3>Your copy</h3>
+            <span class="rail-count" id="found-count">0 of 0</span>
+            <button class="aj-link" id="tips-btn" type="button">Desk tips (<b id="tips-left">3</b>)</button>
+          </div>
+          <div class="tips-slips" id="tips-slips"></div>
+          <ul class="found-list" id="found-list"></ul>
+          <p class="found-empty" id="found-empty">Words you find are filed here.</p>
+        </aside>
+
+      </div>
+    </section>
+
+  </div>
+
+  <div class="toast-lane" id="toast-lane" aria-live="polite"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+  <div class="bee-veil" id="veil" hidden><div class="bee-modal" id="modal" role="dialog" aria-modal="true"></div></div>
+</main>
+
+<!-- the shared Al Jazeera chrome: real site header + footer + fit-to-viewport -->
+<script src="js/aj-chrome.js?v=1" defer></script>
+<script src="js/aj-bee.js?v=2" defer></script>
+</body>
+</html>
