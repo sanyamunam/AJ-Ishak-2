@@ -172,28 +172,13 @@
     if (bar && /HEADLINES/i.test(bar.textContent || '')) bar.remove();
   }
 
-  /* The games bundle renders its Spelling Bee card without a destination —
-     route any click on it to the standalone game. Delegated so it survives
-     the bundle's re-renders. */
-  function wireSpellingBee() {
-    document.addEventListener('click', function (e) {
-      var n = e.target;
-      for (var i = 0; i < 8 && n && n !== document.body; i++, n = n.parentElement) {
-        var txt = (n.textContent || '').trim();
-        if (/spelling bee/i.test(txt) && txt.length < 220) {
-          e.preventDefault(); e.stopPropagation();
-          location.href = 'spelling-bee.html';
-          return;
-        }
-      }
-    }, true);
-  }
+  /* The Spelling Bee card used to send the reader to spelling-bee.html;
+     js/aj-bee-embed.js now mounts the game into the hub's own panel instead. */
 
   function init() {
     ensureCss();
     ensureViewport();
     scopeLinkColours();
-    if (/games/i.test(location.pathname)) wireSpellingBee();
     if (/account/i.test(location.pathname)) {
       whiteBackground(); anybodyFont();
       // the dashboard's fixed-height absolute layout can't reflow around the

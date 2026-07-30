@@ -180,34 +180,56 @@
   else window.addEventListener('load', init);
 })();
 
-/* Mobile capsules rail: the volcano card is the only one with a video
-   (demo), so on narrow viewports start the horizontal rail scrolled so
-   that card sits centered instead of clipped at the edge. */
+/* Mobile capsules rail: keep the FEATURED story centered. aj-capsules.js
+   rotates an "is-live" spotlight card (larger, autoplaying its clip); on
+   narrow viewports we keep whichever card is live centered in the rail so
+   the story is never clipped at the edge. Falls back to the volcano video
+   card before the carousel initialises. */
 (function () {
   'use strict';
   var MQ = window.matchMedia('(max-width: 767px)');
 
-  function center() {
-    if (!MQ.matches) return true;
+  function findCard() {
+    var liveEl = document.querySelector('.aj-cap.is-live');
+    if (liveEl) return liveEl;
     var imgs = [].slice.call(document.querySelectorAll('img[alt]')).filter(function (i) {
       return /^philippines volcano erupts/i.test(i.alt || '');
     });
-    if (!imgs.length) return false;
-    // the alt appears on two cards in the rail; the video (story) card is
-    // the one deeper in the rail — pick the match with the largest offset
-    var card = imgs.map(function (i) { return i.closest('a') || i.parentElement; })
+    if (!imgs.length) return null;
+    return imgs.map(function (i) { return i.closest('a') || i.parentElement; })
       .sort(function (a, b) { return b.offsetLeft - a.offsetLeft; })[0];
-    // nearest horizontally scrollable ancestor
+  }
+
+  function center(smooth) {
+    if (!MQ.matches) return true;
+    var card = findCard();
+    if (!card) return false;
     var rail = card.parentElement;
     while (rail && rail !== document.body && rail.scrollWidth <= rail.clientWidth + 4) rail = rail.parentElement;
     if (!rail || rail === document.body) return false;
-    rail.scrollLeft = card.offsetLeft - (rail.clientWidth - card.offsetWidth) / 2;
+    var target = card.offsetLeft - (rail.clientWidth - card.offsetWidth) / 2;
+    if (Math.abs(rail.scrollLeft - target) < 4) return true;
+    if (smooth && rail.scrollTo) rail.scrollTo({ left: target, behavior: 'smooth' });
+    else rail.scrollLeft = target;
     return true;
   }
 
   function init() {
-    if (center()) return;
-    var n = 0, iv = setInterval(function () { if (center() || ++n > 20) clearInterval(iv); }, 300);
+    var n = 0, iv = setInterval(function () { if (center(false) || ++n > 20) clearInterval(iv); }, 300);
+    // Track the rotating spotlight: recenter (smoothly) whenever is-live
+    // moves to another card. The featured card also animates its width for
+    // ~650ms, so follow up once the resize settles.
+    var mo = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var t = muts[i].target;
+        if (t.classList && t.classList.contains('is-live')) {
+          center(true);
+          setTimeout(function () { center(true); }, 700);
+          return;
+        }
+      }
+    });
+    mo.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
   }
 
   if (document.readyState === 'complete') init();

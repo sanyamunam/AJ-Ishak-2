@@ -1042,6 +1042,9 @@ main [class~="h-[43px]"][class~="justify-between"] { container-type: inline-size
 /* ------------------------------------------------------------------ */
 @media (max-width: 767px) {
 
+  /* Capsules rail: hide the hairline dividers between video cards */
+  .aj-cap-row > div[class~="w-px"] { display: none !important; }
+
   /* 1) Newsletter band: kill the desktop 120px gutters, full-width form */
   footer div[class*="px-[120px]"][class*="bg-gradient"] {
     padding: 32px 20px 8px !important;

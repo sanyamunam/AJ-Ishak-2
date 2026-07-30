@@ -332,7 +332,7 @@
     var ctx = canvas.getContext('2d');
     var yaw = 0.5, pitch = -0.35, tYaw = null, tPitch = null, dragging = false, lastX = 0, lastY = 0;
     var vYaw = 0, vPitch = 0;              // inertial spin after a released drag
-    var uZoom = 1, tUZoom = 1;             // user zoom (wheel / HUD), eased
+    var uZoom = 1, tUZoom = 1;             // user zoom (HUD / dblclick / pinch), eased
     var focusEntry = null, raf = null, DPR = Math.min(window.devicePixelRatio || 1, 2), gZoom = 1;
     var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -654,17 +654,11 @@
     canvas.addEventListener('pointerup', endDrag);
     canvas.addEventListener('pointercancel', endDrag);
 
-    /* ---- wheel zoom over the sphere itself; page scroll everywhere else ---- */
-    canvas.addEventListener('wheel', function (e) {
-      var w = wrap.clientWidth, h = wrap.clientHeight;
-      var cx = w / 2 + mapDX, cy = h / 2, R = Math.min(w + 2 * mapDX, h) * GLOBE_R * gZoom * uZoom;
-      var r = canvas.getBoundingClientRect(), sc = r.width / (w || 1);
-      var mx = (e.clientX - r.left) / (sc || 1) - cx, my = (e.clientY - r.top) / (sc || 1) - cy;
-      if (mx * mx + my * my > R * R * 1.2) return;   // off-sphere: normal page scroll
-      e.preventDefault();
-      noteActivity();
-      tUZoom = Math.max(0.8, Math.min(2.4, tUZoom * Math.exp(-e.deltaY * 0.0016)));
-    }, { passive: false });
+    /* No wheel zoom. The globe fills most of the viewport, so capturing the
+       wheel over it meant the page stopped scrolling wherever the pointer
+       happened to be — scrolling past the globe is the far more common intent.
+       Zoom stays available on the HUD's +/- buttons, by double-click, and by
+       pinch on touch. */
     canvas.addEventListener('dblclick', function () {
       noteActivity();
       tUZoom = tUZoom > 1.25 ? 1 : 1.7;

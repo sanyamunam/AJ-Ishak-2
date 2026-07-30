@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create an account — Al Jazeera</title>
+<link rel="stylesheet" href="css/aj-fonts.css">
+<link rel="stylesheet" href="css/aj-auth.css">
+</head>
+<body class="sg-page">
+<div class="sg-scrim" role="dialog" aria-modal="true" aria-labelledby="sg-title" data-exit="index.html">
+  <div class="sg-wrap">
+    <button class="sg-close" type="button" aria-label="Close">✕</button>
+    <div class="sg-split">
+
+      <div class="sg-form-panel">
+        <form class="sg-form" data-success="aljazeera-foryou.html">
+          <div class="sg-head">
+            <img class="sg-logo" src="assets/signup/logo.svg" alt="Al Jazeera">
+            <div class="sg-titles">
+              <h1 class="sg-title" id="sg-title">Creating an account.</h1>
+              <p class="sg-sub">This is not a paywall. It’s free to join.</p>
+            </div>
+          </div>
+
+          <div class="sg-fields">
+            <div class="sg-field">
+              <label class="sg-label" for="sg-email">E-mail</label>
+              <div class="sg-input-box">
+                <input id="sg-email" type="email" placeholder="name@example.com" autocomplete="email">
+              </div>
+            </div>
+            <div class="sg-field">
+              <label class="sg-label" for="sg-pass">Password</label>
+              <div class="sg-input-box">
+                <input id="sg-pass" type="password" placeholder="8+ characters" autocomplete="new-password">
+                <button class="sg-eye" type="button" aria-label="Toggle password visibility">
+                  <img src="assets/signup/eye.svg" alt="">
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sg-consent">
+            <div class="sg-checks">
+              <div class="sg-check on" role="checkbox" aria-checked="true" tabindex="0">
+                <span class="sg-box"><img src="assets/signup/check.svg" alt=""></span>
+                <p>I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a>. My activity will be used to personalise my Al Jazeera experience.</p>
+              </div>
+              <div class="sg-check" role="checkbox" aria-checked="false" tabindex="0">
+                <span class="sg-box"><img src="assets/signup/check.svg" alt=""></span>
+                <p>You agree to receive personalised updates from Al Jazeera over email. You can opt out at any time</p>
+              </div>
+            </div>
+            <button class="sg-cta" type="submit">Create account</button>
+          </div>
+
+          <div class="sg-alt">
+            <div class="sg-alt-inner">
+              <div class="sg-or"><i></i><span>Or continue with</span><i></i></div>
+              <div class="sg-social">
+                <button type="button"><img src="assets/signup/google.svg" alt="">Google</button>
+                <button type="button"><img src="assets/signup/facebook.svg" alt="">Facebook</button>
+                <button type="button"><img class="apple" src="assets/signup/apple.svg" alt="">Apple</button>
+              </div>
+            </div>
+            <p class="sg-signin">Already have an account? <a href="aljazeera-signin.html">Sign in</a></p>
+          </div>
+        </form>
+      </div>
+
+      <div class="sg-perks-panel">
+        <div class="sg-perks-head">
+          <p class="sg-eyebrow">One account. The whole story</p>
+          <h2 class="sg-perks-title">Everything that comes with your account.</h2>
+        </div>
+        <div class="sg-cards">
+          <div class="sg-track">
+            <div class="sg-slot">
+              <div class="sg-card far">
+                <span class="tile"><img src="assets/signup/comment.svg" alt=""></span>
+                <div class="body">
+                  <div class="row with-chip"><span class="name">Comment on articles</span><span class="sg-chip">Coming soon</span></div>
+                  <p class="desc">Share your thoughts on our stories and connect with other readers.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sg-slot">
+              <div class="sg-card near">
+                <span class="tile"><img src="assets/signup/bookmark.svg" alt=""></span>
+                <div class="body">
+                  <div class="row"><span class="name">Reading list</span></div>
+                  <p class="desc">Curate a personal library of articles and reports you can return to.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sg-slot">
+              <div class="sg-card focus">
+                <span class="tile"><img src="assets/signup/follow.svg" alt=""></span>
+                <div class="body">
+                  <div class="row"><span class="name">Follow authors and topics</span></div>
+                  <p class="desc">The latest from your preferred correspondents and the topics that matter.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sg-slot">
+              <div class="sg-card near">
+                <span class="tile"><img src="assets/signup/bell.svg" alt=""></span>
+                <div class="body">
+                  <div class="row"><span class="name">Notifications and alerts</span></div>
+                  <p class="desc">Timely updates on breaking developments and crucial news stories.</p>
+                </div>
+              </div>
+            </div>
+            <div class="sg-slot">
+              <div class="sg-card far">
+                <span class="tile"><img src="assets/signup/star.svg" alt=""></span>
+                <div class="body">
+                  <div class="row"><span class="name">One Al Jazeera account</span></div>
+                  <p class="desc">One login for our regional news sites, apps, documentaries and the OTT platform.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/aj-auth.js"></script>
+</body>
+</html>

@@ -68,9 +68,16 @@
   // template (e.g. the aside gets the same id as a SPAN quiz progress cell),
   // so quiz cells are located specifically as SPANs.
   function cellTpl(n) {
-    var nodes = document.querySelectorAll('[data-dc-tpl="' + n + '"]');
-    for (var i = 0; i < nodes.length; i++) if (nodes[i].tagName === 'SPAN') return nodes[i];
-    return null;
+    var nodes = [].slice.call(document.querySelectorAll('[data-dc-tpl="' + n + '"]'));
+    if (!nodes.length) return null;
+    // The bundle renders the cells as SPAN in some builds and DIV in others, so
+    // match on where the node is rather than on its tag: a progress cell lives
+    // inside the quiz section and never inside the "Explore other Games" rail.
+    var inQuiz = nodes.filter(function (el) {
+      return !el.closest('aside') && el.children.length === 0;
+    });
+    var span = inQuiz.filter(function (el) { return el.tagName === 'SPAN'; })[0];
+    return span || inQuiz[0] || null;
   }
 
   /* Daily-Quiz mosaic icon — replaces the bundle's broken one. Black grid bg with
@@ -292,9 +299,20 @@
       var crosswordShowing = /across/i.test(body) && /down/i.test(body) && /check/i.test(body);
       if (crosswordShowing) { clearInterval(iv); releaseMask(); return; }
       if (!quizShowing) return; // either not mounted yet, or already switched
+      /* Pick the Mini Crossword's own card. Taking the last "PLAY →" on the
+         page opens whichever game happens to sit at the bottom of the rail —
+         which is how a #crossword link ended up launching another game. */
       var cta = [].filter.call(document.querySelectorAll('div'), function (el) {
-        return el.children.length <= 2 && /^PLAY\s*→$/.test((el.innerText || '').trim());
-      }).pop();
+        if (el.children.length > 2 || !/^PLAY\s*→$/.test((el.innerText || '').trim())) return false;
+        var card = el.parentElement;
+        for (var i = 0; i < 5 && card; i++, card = card.parentElement) {
+          var txt = (card.textContent || '').trim();
+          // the card itself, not the rail that holds every card: its text
+          // starts with this game's name and covers only this one entry
+          if (txt.length < 200 && /^the mini crossword/i.test(txt)) return true;
+        }
+        return false;
+      })[0];
       if (!cta) return;
       cta.click(); // keep retrying until the quiz view actually goes away
     }, 120);
@@ -378,6 +396,18 @@
       }
       if (n > 40) clearInterval(iv);
     }, 200);
+
+    /* The bundle can re-render the question column long after we've taken it
+       over, throwing our options away and leaving a dead card. Keep watching:
+       if the quiz view is on screen without our options, clear the stale marker
+       and mount again. */
+    setInterval(function () {
+      if (mounted()) return;
+      if (!/question \d\/3/i.test(document.body.innerText || '')) return;   // not the quiz view
+      var sec = tpl(29);
+      if (sec) sec.removeAttribute('data-ajq');
+      tryMount();
+    }, 600);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

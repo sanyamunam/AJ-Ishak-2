@@ -1,0 +1,241 @@
+/* Game splash — the welcome card a game shows before it loads.
+   Geometry and type from Figma 37636:18504 (the Spelling Bee splash); the
+   palette, icon and copy are per-game and set by js/aj-game-splash.js through
+   the --sp-* custom properties. */
+
+
+/* Held between the moment the game panel appears and the moment the splash is
+   attached to it: the panel keeps its size but shows nothing, so the reader
+   never sees a frame of the game before its welcome card. */
+/* opacity, not visibility/display: aj-quiz.js decides whether the crossword
+   view has mounted by reading document.innerText, and hidden text is dropped
+   from it — which left that check looping and toggling the view back. */
+.aj-splash-hold > *:not(.aj-splash) { opacity: 0; }
+
+.aj-splash {
+  position: absolute; inset: 0; z-index: 5;
+  background: var(--sp-bg, #fae16a);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; transition: opacity .45s ease;
+  font-family: 'Anybody', Archivo, Arial, sans-serif;
+}
+.aj-splash.is-out { opacity: 0; pointer-events: none; }
+
+/* the soft dome washing the bottom edge, behind the loop */
+.sp-dome {
+  position: absolute; left: 50%; bottom: -262px; width: 408px; height: 408px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.2));
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+/* ---- the loop ----
+   The splash sits behind a decision ("do I play?"), so the motion must not
+   compete with the two buttons. Every game gets the same quiet mechanic — one
+   marker is active, the position advances roughly every 1.9s — drawn in that
+   game's own language:
+
+     bar    (quiz)      three questions, the current one a short bar
+     cells  (crossword) five squares, a cursor stepping across them
+     hive   (bee)       seven letters, lighting one at a time
+
+   Only opacity and transform animate: the active shape is a fixed-size element
+   scaled from rest, so nothing reflows and the loop stays on the compositor.
+   Movement is under 10px and no colour cycles. */
+.sp-loop {
+  position: absolute; left: 50%; bottom: 34px; z-index: 0;
+  display: flex; align-items: center; gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  --sp-cycle: 5.7s;
+  --sp-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --sp-ink: rgba(22, 18, 14, 0.62);
+  --sp-rest: rgba(22, 18, 14, 0.32);
+}
+.sp-step { position: relative; display: flex; align-items: center; }
+.sp-step::before, .sp-step::after { content: ""; position: absolute; }
+/* the resting mark fades out as the active one takes over */
+.sp-step::before {
+  background: var(--sp-rest); opacity: 1;
+  animation-duration: var(--sp-cycle); animation-timing-function: var(--sp-ease);
+  animation-iteration-count: infinite;
+}
+.sp-step::after {
+  background: var(--sp-ink);
+  opacity: 0; transform-origin: left center;
+  animation-duration: var(--sp-cycle); animation-timing-function: var(--sp-ease);
+  animation-iteration-count: infinite;
+}
+
+/* quiz — dot grows into a progress bar */
+.sp-loop--bar .sp-step { width: 26px; height: 6px; }
+.sp-loop--bar .sp-step::before { left: 10px; width: 6px; height: 6px; border-radius: 999px; }
+.sp-loop--bar .sp-step::after  { left: 0; width: 26px; height: 6px; border-radius: 999px; }
+
+/* crossword — empty squares, one filled by the cursor */
+.sp-loop--cells { gap: 5px; }
+.sp-loop--cells .sp-step { width: 15px; height: 15px; }
+.sp-loop--cells .sp-step::before {
+  inset: 0; border: 1px solid var(--sp-rest); background: none; border-radius: 1px;
+}
+.sp-loop--cells .sp-step::after {
+  inset: 0; border-radius: 1px; transform-origin: center;
+}
+
+/* bee — seven letters, one lit */
+.sp-loop--hive { gap: 7px; }
+.sp-loop--hive .sp-step { width: 9px; height: 9px; }
+.sp-loop--hive .sp-step::before { inset: 0; border-radius: 999px; }
+.sp-loop--hive .sp-step::after  { inset: 0; border-radius: 999px; transform-origin: center; }
+
+/* the active window is one slot wide, so each step is offset by a slot */
+.sp-n3 .sp-step:nth-child(2)::before, .sp-n3 .sp-step:nth-child(2)::after { animation-delay: calc(var(--sp-cycle) / -3 * 2); }
+.sp-n3 .sp-step:nth-child(3)::before, .sp-n3 .sp-step:nth-child(3)::after { animation-delay: calc(var(--sp-cycle) / -3 * 1); }
+
+.sp-n5 .sp-step:nth-child(2)::before, .sp-n5 .sp-step:nth-child(2)::after { animation-delay: calc(var(--sp-cycle) / -5 * 4); }
+.sp-n5 .sp-step:nth-child(3)::before, .sp-n5 .sp-step:nth-child(3)::after { animation-delay: calc(var(--sp-cycle) / -5 * 3); }
+.sp-n5 .sp-step:nth-child(4)::before, .sp-n5 .sp-step:nth-child(4)::after { animation-delay: calc(var(--sp-cycle) / -5 * 2); }
+.sp-n5 .sp-step:nth-child(5)::before, .sp-n5 .sp-step:nth-child(5)::after { animation-delay: calc(var(--sp-cycle) / -5 * 1); }
+
+.sp-n7 .sp-step:nth-child(2)::before, .sp-n7 .sp-step:nth-child(2)::after { animation-delay: calc(var(--sp-cycle) / -7 * 6); }
+.sp-n7 .sp-step:nth-child(3)::before, .sp-n7 .sp-step:nth-child(3)::after { animation-delay: calc(var(--sp-cycle) / -7 * 5); }
+.sp-n7 .sp-step:nth-child(4)::before, .sp-n7 .sp-step:nth-child(4)::after { animation-delay: calc(var(--sp-cycle) / -7 * 4); }
+.sp-n7 .sp-step:nth-child(5)::before, .sp-n7 .sp-step:nth-child(5)::after { animation-delay: calc(var(--sp-cycle) / -7 * 3); }
+.sp-n7 .sp-step:nth-child(6)::before, .sp-n7 .sp-step:nth-child(6)::after { animation-delay: calc(var(--sp-cycle) / -7 * 2); }
+.sp-n7 .sp-step:nth-child(7)::before, .sp-n7 .sp-step:nth-child(7)::after { animation-delay: calc(var(--sp-cycle) / -7 * 1); }
+
+/* One active slot per cycle. The lit window is sized to the number of markers
+   (a third of the cycle for three, a fifth for five, a seventh for seven) so
+   exactly one is ever active and the pace stays identical across games. */
+@keyframes spActive3 {
+  0%        { opacity: 0; transform: scale(0.62); }
+  6%, 27%   { opacity: 1; transform: scale(1); }
+  33%, 100% { opacity: 0; transform: scale(0.62); }
+}
+@keyframes spRest3 {
+  0% { opacity: 1; } 6%, 27% { opacity: 0; } 33%, 100% { opacity: 1; }
+}
+@keyframes spActive5 {
+  0%        { opacity: 0; transform: scale(0.62); }
+  4%, 16%   { opacity: 1; transform: scale(1); }
+  20%, 100% { opacity: 0; transform: scale(0.62); }
+}
+@keyframes spRest5 {
+  0% { opacity: 1; } 4%, 16% { opacity: 0; } 20%, 100% { opacity: 1; }
+}
+@keyframes spActive7 {
+  0%        { opacity: 0; transform: scale(0.62); }
+  3%, 11%   { opacity: 1; transform: scale(1); }
+  14%, 100% { opacity: 0; transform: scale(0.62); }
+}
+@keyframes spRest7 {
+  0% { opacity: 1; } 3%, 11% { opacity: 0; } 14%, 100% { opacity: 1; }
+}
+.sp-n3 .sp-step::before { animation-name: spRest3; }
+.sp-n3 .sp-step::after  { animation-name: spActive3; }
+.sp-n5 .sp-step::before { animation-name: spRest5; }
+.sp-n5 .sp-step::after  { animation-name: spActive5; }
+.sp-n7 .sp-step::before { animation-name: spRest7; }
+.sp-n7 .sp-step::after  { animation-name: spActive7; }
+
+/* the quiz bar grows sideways rather than from its centre */
+.sp-loop--bar .sp-step::after { animation-name: spActiveBar3; }
+@keyframes spActiveBar3 {
+  0%        { opacity: 0; transform: scaleX(0.23); }
+  6%, 27%   { opacity: 1; transform: scaleX(1); }
+  33%, 100% { opacity: 0; transform: scaleX(0.23); }
+}
+
+.sp-body {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+  width: 560px; max-width: 100%;
+  /* the bottom padding reserves the band the loop plays in */
+  padding: 40px 24px 84px;
+  text-align: center;
+}
+.sp-top { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+.sp-mark { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; }
+.sp-icon {
+  width: 86px; height: 86px; border-radius: 22px; overflow: hidden;
+  background: #fff; box-shadow: 0 10px 26px rgba(22, 18, 14, 0.12);
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-icon img, .sp-icon svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* the icon drifts, the way an app tile does on a hero shot — slow, tiny, and
+   ease-in-out so it never reads as a bounce. Shadow tracks it so the card feels
+   lifted rather than sliding. */
+.sp-icon {
+  animation: spFloat 4.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform;
+}
+@keyframes spFloat {
+  0%, 100% { transform: translateY(0); box-shadow: 0 10px 26px rgba(22, 18, 14, 0.12); }
+  50%      { transform: translateY(-7px); box-shadow: 0 18px 30px rgba(22, 18, 14, 0.16); }
+}
+.sp-titles { display: flex; flex-direction: column; gap: 4px; color: #1e1b33; }
+.sp-kicker { font-family: Lora, Georgia, serif; font-weight: 600; font-style: italic; font-size: 20px; opacity: .8; }
+.sp-name { font-weight: 700; font-size: 40px; line-height: 1.1; }
+.sp-blurb { font-size: 17px; line-height: 1.45; color: #202020; }
+
+.sp-actions { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 380px; max-width: 100%; }
+.sp-buttons { display: flex; gap: 8px; }
+.sp-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  width: 168px; height: 52px; border: 0; border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-weight: 600; font-size: 16px;
+  transition: transform .18s ease, box-shadow .18s ease, background .2s ease;
+}
+.sp-btn img { width: 17px; height: 17px; display: block; }
+.sp-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(22, 18, 14, 0.16); }
+.sp-play { background: #202020; color: #fff; }
+.sp-signin { background: #fff; color: #1e1b33; font-size: 15.5px; text-decoration: none; }
+.sp-signin img { width: 16px; height: 16px; }
+.sp-streak {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-weight: 500; font-size: 12.5px; color: #202020;
+}
+.sp-streak img { width: 16px; height: 16px; display: block; }
+
+.sp-social { display: flex; align-items: center; gap: 13px; }
+.sp-faces { display: flex; align-items: center; }
+.sp-faces span {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 55px;
+  border: 2px solid var(--sp-bg, #fae16a);
+  font-weight: 600; font-size: 16.133px; color: #fff;
+}
+.sp-faces span + span { margin-left: -16px; }
+.sp-count { font-size: 13.5px; letter-spacing: .18px; color: #202020; }
+
+@media (max-width: 767px) {
+  .sp-name { font-size: 30px; }
+  .sp-kicker { font-size: 17px; }
+  .sp-blurb { font-size: 15px; }
+  .sp-buttons { flex-direction: column; width: 100%; align-items: center; }
+  .sp-btn { width: 100%; max-width: 280px; }
+  .sp-dome { bottom: -300px; }
+  .sp-loop { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aj-splash { transition: none; }
+  .sp-btn { transition: none; }
+  .sp-icon { animation: none; }
+  /* keep the meaning (three questions, one of them current), drop the motion */
+  .sp-step::before, .sp-step::after { animation: none; }
+  .sp-step:first-child::before { opacity: 0; }
+  .sp-step:first-child::after { opacity: 1; transform: none; }
+}
+
+/* One card, one size. The splash fills the height the panel is held at while
+   it is up (js/aj-game-splash.js), so the quiz, the crossword and the bee all
+   open at identical dimensions instead of inheriting each game's own height. */
+/* the panel is pinned to exactly the card's height while the splash is up, so
+   a taller game underneath (the bee's board runs past 560) cannot stretch it;
+   removing the class on Play restores the game's natural height */
+.aj-splash-hold { height: 680px; min-height: 680px; overflow: hidden; }
+.aj-splash { height: 100%; min-height: 680px; }

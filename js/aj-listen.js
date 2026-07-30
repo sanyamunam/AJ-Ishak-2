@@ -123,11 +123,26 @@
     });
   }
 
+  /* The wide podcast hero (720px card in the PODCAST section) is audio, not a
+     story: claim it before aj-stories wires it (stories skips hosts that
+     already carry data-ajs) and open the listen bar instead. */
+  function wirePodcast() {
+    [].slice.call(document.querySelectorAll('div.relative')).forEach(function (d) {
+      var c = d.className || '';
+      if (d.getAttribute('data-ajs') || !/w-\[720px\]/.test(c) || !/self-stretch/.test(c)) return;
+      if (!/min\s?\d+\s?sec/i.test(d.textContent || '')) return;
+      d.setAttribute('data-ajs', 'listen');
+      d.style.cursor = 'pointer';
+      d.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); open(); }, true);
+    });
+  }
+
   function init() {
     wireButtons();
+    wirePodcast();
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
     // lazily-rendered LISTEN buttons
-    var n = 0, iv = setInterval(function () { wireButtons(); if (++n > 12) clearInterval(iv); }, 400);
+    var n = 0, iv = setInterval(function () { wireButtons(); wirePodcast(); if (++n > 12) clearInterval(iv); }, 400);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

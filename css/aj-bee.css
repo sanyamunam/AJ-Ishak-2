@@ -342,3 +342,328 @@ body { background: #fff; }
   .entry .caret { animation: none; }
   .confetti { display: none; }
 }
+
+/* ---- games-hub shell: game column + "Explore other Games" rail ----------
+   Mirrors aljazeera-games.html, which lays its game section (flexible) beside
+   a fixed 333px aside with a 64px gutter. */
+.bee-cols { display: flex; align-items: flex-start; gap: 64px; }
+.bee-main { flex: 1 1 auto; min-width: 0; }
+
+.bee-rail { flex: 0 0 333px; width: 333px; padding-top: 8px; }
+.br-head { font: 600 20px/1.3 var(--sans); color: var(--ink); }
+.br-sub { font: 400 13px/19px var(--sans); color: var(--grey); margin-top: 6px; }
+.br-card {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 20px; padding: 16px 0; text-decoration: none;
+  border-top: 1px solid #e7e5e0;
+}
+.br-icon { flex: none; width: 40px; height: 40px; display: block; }
+.br-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.br-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.br-name { font: 600 15px/1.3 var(--sans); color: var(--ink); }
+.br-desc { font: 400 12px/17px var(--sans); color: var(--grey); }
+.br-play {
+  flex: none; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: #fff;
+  font: 600 11px/1.15 var(--sans); letter-spacing: .45px; text-transform: uppercase;
+  padding: 10px 14px; transition: background .2s ease;
+}
+.br-card:hover .br-play { background: #3a342c; }
+.br-ad {
+  margin-top: 24px; padding: 16px; min-height: 220px;
+  background: #f5f4f0; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-between; text-align: center;
+}
+.br-ad-why { font: 400 11px/1.4 var(--sans); color: var(--grey); text-decoration: underline; }
+.br-ad-slot {
+  font: 600 10px/1.4 var(--sans); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--grey);
+}
+
+@media (max-width: 1023px) {
+  .bee-cols { flex-direction: column; gap: 48px; }
+  .bee-rail { flex: none; width: 100%; }
+}
+
+/* ---- mounted inside the games hub -------------------------------------
+   The bee borrows the hub's game-panel chrome so it reads as a sibling of the
+   Daily Quiz and the Mini Crossword: a white card with a hairline border, an
+   icon + title + standfirst row above a hairline, and the same body gutters.
+   Scoped to .aj-bee-host, so the standalone page keeps its own full-bleed look. */
+.aj-bee-host {
+  position: relative;
+  background: #fff;
+  border: 1px solid #e7e7e7;
+}
+.aj-bee-host .bee-embed { padding: 0; }
+.aj-bee-host .bee-wrap { max-width: none; padding: 0; margin: 0; }
+
+/* header row — mirrors the quiz panel: 18px gap, 20/28 padding, hairline under */
+.bee-hubhead {
+  display: flex; align-items: center; gap: 18px;
+  padding: 20px 28px; border-bottom: 1px solid #e7e7e7;
+}
+.bee-hubhead .bh-icon { width: 46px; height: 46px; object-fit: contain; display: block; flex: none; }
+.bee-hubhead .bh-title {
+  font-family: 'Source Serif 4', Lora, Georgia, serif;
+  font-weight: 700; font-size: 25px; line-height: 1.15; color: var(--ink);
+}
+.bee-hubhead .bh-sub { font-size: 14px; color: #6e6e6e; margin-top: 3px; }
+
+/* body — the hub's games sit on generous gutters, not the bee's page padding */
+.aj-bee-host #bee-cover { padding: 0; }
+.aj-bee-host #bee-game { padding: 28px 56px 60px; }
+.aj-bee-host .game-cols { gap: 60px; }
+.aj-bee-host .c3-hero { border-radius: 0; }
+
+@media (max-width: 1023px) {
+  .bee-hubhead { padding: 16px 20px; gap: 14px; }
+  .bee-hubhead .bh-title { font-size: 20px; }
+  .aj-bee-host #bee-game { padding: 20px; }
+  .aj-bee-host .game-cols { gap: 28px; }
+}
+.aj-bee-host .bee-sechead[hidden] { display: none; }
+
+/* ---- fitting the hub panel --------------------------------------------
+   The board and the word list used to sit side by side in a ~348px column
+   each, which left the right half of the card empty and the comb small. They
+   stack now: the comb takes the full width of the panel, and the filed words
+   run beneath it in newspaper columns. One wide column beats two starved ones. */
+.aj-bee-host .game-cols {
+  display: block;
+  margin-top: 22px;
+}
+
+/* board: full width of the panel, comb centred in it */
+.aj-bee-host .playfield {
+  width: 100%;
+  padding: 32px 24px 28px;
+}
+.aj-bee-host .entry-row { height: 58px; }
+.aj-bee-host .entry { font-size: 32px; }
+.aj-bee-host .case { margin-top: 6px; gap: 0; }
+.aj-bee-host .case .row { gap: 7px; }
+.aj-bee-host .case .row + .row { margin-top: -14px; }
+/* the extra room buys a bigger comb; the 1.13 height ratio is what keeps a
+   hexagon reading as a hexagon, so it holds at every size */
+.aj-bee-host .case .tile { width: 82px; height: 93px; font-size: 28px; }
+.aj-bee-host .keys { margin-top: 28px; }
+
+/* the filed words sit under the board, flowing across the full width */
+.aj-bee-host .copyrail {
+  margin-top: 30px; min-height: 0; max-height: none; display: block;
+}
+.aj-bee-host .found-list {
+  display: block; columns: 4; column-gap: 28px;
+  overflow: visible; padding-top: 12px;
+}
+.aj-bee-host .found-list li {
+  display: flex; break-inside: avoid; width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .aj-bee-host .found-list { columns: 2; }
+}
+@media (max-width: 767px) {
+  .aj-bee-host .case .tile { width: 62px; height: 70px; font-size: 22px; }
+  .aj-bee-host .case .row + .row { margin-top: -11px; }
+  .aj-bee-host .found-list { columns: 1; }
+}
+
+/* Hosted in the hub: the bundle's own children are hidden, never removed, so
+   its React runtime can still find every node it rendered. */
+/* the splash sits in this panel too, as a sibling of the bee's host, so it has
+   to survive the blanking — it is ours, not the bundle's */
+.aj-bee-hosted > *:not(.aj-bee-host):not(.aj-splash) { display: none !important; }
+.aj-bee-hosted { position: relative; }
+
+/* ═══ THE COMB ══════════════════════════════════════════════════════════
+   Redesign of the play surface.
+
+   Who: a reader on a coffee break, a few minutes between stories.
+   What: find words hiding in seven letters.
+   Feel: the newspaper puzzle page — beeswax paper, ink, one drop of honey.
+   Not a toy: no bright plastic, no floating cards, no drop shadows.
+
+   Signature: the comb itself. A Spelling Bee *is* a honeycomb, and the old
+   board threw that away — seven squares in a 2/3/2 grid with gaps between
+   them. Here the cells are real hexagons that interlock, so the seven letters
+   read as one piece of comb rather than seven loose keys.
+
+   Depth: borders and paper tint only, committed throughout. Paper does not
+   float, so nothing casts a shadow.
+   Accent: honey, used for exactly one thing — the centre letter every word
+   must use. One accent, one meaning. */
+.bee-page {
+  --comb-wax: #f7f1e3;      /* beeswax — the board */
+  --comb-cell: #fffdf8;     /* the paper of a single cell */
+  --comb-honey: #f0a92a;    /* the centre letter, and only that */
+  --comb-rule: rgba(22, 18, 14, 0.16);
+  --comb-rule-soft: rgba(22, 18, 14, 0.08);
+}
+
+/* ---- the board ---- */
+.playfield {
+  background: var(--comb-wax);
+  border: 1px solid var(--comb-rule-soft);
+  padding: 30px 26px 26px;
+}
+
+/* the word being typed, set in the paper's own serif */
+.entry-row { height: 62px; }
+.entry {
+  font-family: Lora, Georgia, serif;
+  font-weight: 600; letter-spacing: .01em;
+  color: var(--ink);
+}
+.entry .ch.req { color: #b8770d; }        /* honey, darkened for text contrast */
+.entry .caret { background: var(--comb-honey); width: 3px; }
+
+/* ---- the comb ---- */
+.case { margin-top: 6px; gap: 0; }
+.case .row { gap: 6px; }
+/* rows overlap so the hexagons interlock into one sheet of comb */
+.case .row + .row { margin-top: -13px; }
+.case .tile {
+  width: 74px; height: 84px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--comb-cell);
+  border: 0;                              /* clip-path cuts borders — tint instead */
+  font: 700 26px/1 var(--sans);
+  color: var(--ink);
+  transition: background .18s ease, transform 140ms var(--ease-out);
+}
+/* the centre letter: ink on honey, not white on orange — white on this amber
+   sits near 2.5:1 and fails AA; ink on it clears 8:1 */
+.case .tile.center { background: var(--comb-honey); color: var(--ink); border: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .case .tile:hover { background: #f6eddc; }
+  .case .tile.center:hover { background: #e79c17; }
+}
+.case .tile:active { transform: scale(.94); }
+.case .tile:focus-visible { outline: 2px solid var(--ink); outline-offset: -6px; }
+.case.flash .tile { background: #fdf3dd; }
+.case.flash .tile.center { background: var(--comb-honey); }
+
+/* ---- controls: one primary, two quiet ---- */
+.keys { margin-top: 26px; gap: 10px; }
+.key {
+  min-height: 44px;                        /* touch target */
+  border: 1px solid var(--comb-rule);
+  background: transparent;
+  border-radius: 999px;
+  padding: 12px 20px;
+}
+.key:hover { background: rgba(22, 18, 14, 0.05); }
+.key-ico { width: 44px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.key-primary {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+  padding: 12px 26px;
+}
+.key-primary:hover { background: #2c2c36; }
+.play-tip { margin-top: 18px; color: var(--grey); }
+
+/* ---- the copy rail: a filed column, ruled like newsprint ---- */
+.rail-head { border-bottom: 1.5px solid var(--ink); padding-bottom: 8px; }
+.found-list { gap: 6px; padding-top: 14px; }
+.found-list li {
+  border: 0; border-bottom: 1px solid var(--comb-rule-soft);
+  background: transparent; padding: 8px 2px;
+  min-width: 92px;
+}
+.found-list li.pan {
+  background: transparent; color: var(--ink);
+  border-bottom-color: var(--comb-honey);
+  box-shadow: none; font-weight: 700;
+}
+.found-list li.pan b { color: #b8770d; }
+.found-empty { color: var(--grey); }
+
+@media (max-width: 767px) {
+  .case .tile { width: 62px; height: 70px; font-size: 22px; }
+  .case .row + .row { margin-top: -11px; }
+  .playfield { padding: 22px 14px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .case .tile { transition: none; }
+}
+
+/* ═══ THE STANDING ══════════════════════════════════════════════════════
+   Redesign of the status strip above the board.
+
+   What it was: a name, a hairline with nine diamonds on it, a chip, and an
+   orphaned "NEXT: STRINGER AT 6 PTS" floating underneath — four things that
+   never agreed they were one thing.
+
+   What it is now: a masthead. The ranks are newsroom job titles, so the strip
+   is set like a byline block — rank in the paper's serif, points in tabular
+   figures beneath it, and the ladder running across as comb cells that fill
+   with honey as you climb. Same hexagon as the board, one third the size:
+   the status bar and the play surface are visibly the same product.
+
+   The next-rank line is pulled up into the strip so the whole thing reads as
+   a single band with a rule under it, not a stack of leftovers. */
+.game-meta {
+  align-items: center;
+  gap: 32px;
+  padding-bottom: 14px;
+}
+/* left: the byline block */
+.rank-now { min-width: 0; }
+.rank-now b {
+  font: 700 21px/1.1 var(--serif);
+  letter-spacing: -.01em;
+}
+.rank-now span {
+  margin-top: 5px;
+  font: 600 10px/1 var(--sans);
+  letter-spacing: .18em;
+  color: var(--grey);
+  font-variant-numeric: tabular-nums;
+}
+
+/* centre: the ladder, as comb */
+.rank-track { height: 26px; }
+.rank-track .bar, .rank-track .fill { height: 3px; }
+.rank-track .bar { background: rgba(22, 18, 14, 0.10); }
+.rank-track .fill { background: var(--comb-honey, #f0a92a); }
+.rank-track .node {
+  width: 13px; height: 15px;
+  border: 0; border-radius: 0;
+  background: #efe9db;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transform: translate(-50%, -50%);          /* hexagons sit upright, not rotated */
+  box-shadow: 0 0 0 3px #fff;                /* punch each cell out of the rule */
+  transition: background .25s ease, transform .25s var(--ease-out);
+}
+.rank-track .node.hit { background: var(--ink); }
+.rank-track .node.now {
+  background: var(--comb-honey, #f0a92a);
+  transform: translate(-50%, -50%) scale(1.5);
+}
+
+/* right: the streak, quiet until it is worth something */
+.game-chips { align-self: center; }
+.chip {
+  min-height: 36px; padding: 9px 14px;
+  border-radius: 999px;
+  border-color: var(--comb-rule, rgba(22, 18, 14, 0.16));
+  font-variant-numeric: tabular-nums;
+}
+.chip:hover { background: rgba(22, 18, 14, 0.05); }
+/* honey as *text* on white is ~2:1 and fails AA — this is the same hue taken
+   down until it reads. Honey stays a fill colour; this is its ink counterpart. */
+.chip b { color: #8f5c07; }
+
+/* the caption belongs to the band above it, and the band closes with a rule */
+.rank-nextline {
+  margin-top: 0; padding-bottom: 18px;
+  border-bottom: 1px solid var(--comb-rule-soft, rgba(22, 18, 14, 0.08));
+  font-size: 10px; letter-spacing: .16em;
+}
+
+@media (max-width: 767px) {
+  .game-meta { flex-wrap: wrap; gap: 14px 18px; }
+  .rank-track { order: 3; flex-basis: 100%; }
+  .rank-now { flex: 1 1 auto; }
+}

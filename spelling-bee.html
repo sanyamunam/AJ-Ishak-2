@@ -14,6 +14,7 @@
 
 <main class="bee-page">
   <div class="bee-wrap">
+   <div class="bee-main">
 
     <!-- section masthead, homepage pattern: ◆ TITLE over a heavy rule -->
     <!-- div, not <header>: the chrome injector strips stray header tags -->
@@ -60,7 +61,6 @@
         <div class="rank-track" id="rank-track"></div>
         <div class="game-chips">
           <button id="streak-chip" class="chip" type="button">Streak · <b id="streak-n">0</b></button>
-          <button id="game-signin" class="chip chip-dark" type="button">Sign in</button>
         </div>
       </div>
       <p class="rank-nextline" id="rank-next"></p>
@@ -94,6 +94,7 @@
       </div>
     </section>
 
+   </div>
   </div>
 
   <div class="toast-lane" id="toast-lane" aria-live="polite"></div>
@@ -104,5 +105,6 @@
 <!-- the shared Al Jazeera chrome: real site header + footer + fit-to-viewport -->
 <script src="js/aj-chrome.js?v=1" defer></script>
 <script src="js/aj-bee.js?v=2" defer></script>
+<script src="js/aj-game-splash.js?v=1" defer></script>
 </body>
 </html>

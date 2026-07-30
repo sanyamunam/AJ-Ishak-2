@@ -144,7 +144,9 @@
     $('key-shuffle').addEventListener('click', shuffle);
     $('tips-btn').addEventListener('click', useTip);
     $('streak-chip').addEventListener('click', openStats);
-    $('game-signin').addEventListener('click', openSignIn);
+    // the in-game Sign in chip is optional — the site header carries sign-in
+    var gs = $('game-signin');
+    if (gs) gs.addEventListener('click', openSignIn);
     document.addEventListener('keydown', onKey);
   }
 
@@ -245,12 +247,36 @@
   /* Guests get a taste — three words on the house — then the desk asks them
      to sign in to keep filing. AJ is a login product: the wall is an account,
      never a paywall. */
-  var FREE_WORDS = 3;
+  var FREE_WORDS = 2;   // two on the house, then the gate
+  /* The guest gate. Two words in, the reader has shown they want to play, so
+     this asks them to sign in with the site's real dialog rather than a
+     puzzle-shaped imitation of one — and in its compact form, because the
+     benefits rail is an argument for a cold visitor, not for someone
+     mid-puzzle who just wants to carry on. */
   function openGate() {
+    if (window.ajAuthPopup) {
+      window.ajAuthPopup.open('aljazeera-signin.html', {
+        compact: true,
+        title: 'Sign in to continue.',
+        sub: 'Your first two words are on the house. Signing in keeps your streak, rank and record.',
+        /* back to the board, mid-puzzle, with the words already found intact —
+           the reader came here to play, not to be moved to another page */
+        onSuccess: function (email) {
+          var raw = String(email).split('@')[0].split(/[.\s_+-]/)[0];
+          S.user = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Sanya';
+          save();
+          renderAll();
+          toast('Signed in — streak saved', 'good');
+          var e = $('entry'); if (e) e.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+      });
+      return;
+    }
+    // no popup on this page (the standalone bee): fall back to the local modal
     openModal(
       '<p class="mkick">You’re on a roll</p>' +
-      '<h3>Sign in to keep playing</h3>' +
-      '<p class="msub">Your first three words are on the house. A free Al Jazeera account keeps your streak, rank and record — here and on every device.</p>' +
+      '<h3>Sign in to continue</h3>' +
+      '<p class="msub">Your first two words are on the house. A free Al Jazeera account keeps your streak, rank and record — here and on every device.</p>' +
       '<input class="minput" id="signin-name" placeholder="Your name" maxlength="24" autocomplete="off">' +
       '<div class="mrow"><button class="aj-btn aj-btn-gold" data-dosign="1">Sign in — it’s free</button>' +
       '<button class="aj-link" data-x="1">Not now</button></div>'
@@ -345,8 +371,10 @@
     $('tips-slips').innerHTML = S.slips.map(function (s) { return '<span class="slip">' + esc(s) + '</span>'; }).join('');
     if (S.user) {
       var b = $('game-signin');
-      b.textContent = ''; b.classList.add('is-user');
-      b.appendChild(document.createTextNode(S.user));
+      if (b) {
+        b.textContent = ''; b.classList.add('is-user');
+        b.appendChild(document.createTextNode(S.user));
+      }
     }
     if (ri >= RANKS.length - 1 && !S.celebrated.final) { S.celebrated.final = true; save(); setTimeout(openFinale, 900); }
   }
@@ -446,7 +474,7 @@
   }
   function completeSignIn() {
     var i = $('signin-name');
-    S.user = ((i && i.value.trim()) || 'Reader').split(' ')[0];
+    S.user = ((i && i.value.trim()) || 'Sanya').split(' ')[0];
     save();
     closeModal();
     toast('Signed in — streak saved', 'good');

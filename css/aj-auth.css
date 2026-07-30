@@ -1,0 +1,254 @@
+/* Auth dialog — sign-up / sign-in.
+   Values taken from Figma "Login Page" (37620:18289): a 1440x800 split frame,
+   white form half over an #efede3 benefits half, presented here as a modal
+   card floating on the dimmed page. */
+
+/* Everything here is scoped to .sg-scrim. This stylesheet gets injected into
+   whatever page the reader is on when the dialog opens as a popup, so a bare
+   `*` reset or a `body` rule would restyle the whole site — and stay after the
+   dialog closes, since the <link> remains. */
+.sg-scrim, .sg-scrim *, .sg-scrim *::before, .sg-scrim *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+}
+.sg-scrim {
+  font-family: 'Anybody', Archivo, Arial, sans-serif;
+  line-height: normal;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* the standalone auth pages carry this class; the popup never touches <body> */
+body.sg-page { margin: 0; background: #fff; }
+
+/* ---------- modal shell ---------- */
+.sg-scrim {
+  /* above every sticky header on the site, including the games chrome */
+  position: fixed; inset: 0; z-index: 2147483000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 56px;                       /* breathing room around the card */
+  background: rgba(0, 0, 0, 0.8);
+  /* the scrim scrolls, and contain stops that chaining to the page behind —
+     cheaper and safer than freezing <html>, which removes the scrollbar and
+     makes aj-fit.js recompute the page zoom off a changed clientWidth */
+  overflow: auto; overscroll-behavior: contain;
+  opacity: 0; transition: opacity .28s ease;
+}
+.sg-scrim.open { opacity: 1; }
+.sg-wrap {
+  position: relative;
+  display: flex; flex-direction: column; gap: 23px;
+  width: 1240px; max-width: 100%; margin: auto;
+  background: rgba(250, 250, 250, 0.98);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(22, 18, 14, 0.35);
+  transform: translateY(12px) scale(.985);
+  transition: transform .32s cubic-bezier(.22, 1, .36, 1);
+}
+.sg-scrim.open .sg-wrap { transform: none; }
+.sg-close {
+  position: absolute; top: 18px; right: 18px; z-index: 3;
+  width: 40px; height: 40px; border: 0; border-radius: 50%;
+  background: rgba(22, 18, 14, 0.06); color: #16120e;
+  font-size: 18px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s ease;
+}
+.sg-close:hover { background: rgba(22, 18, 14, 0.14); }
+.sg-split { display: flex; align-items: stretch; height: 760px; }
+
+/* ---------- left: form panel ---------- */
+.sg-form-panel {
+  /* flex-basis:0 would fold the padding into the base size, so pin the split
+     explicitly: form takes 40% of the frame, benefits take the rest */
+  flex: 0 0 40%; width: 40%; min-width: 1px; background: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 72px;
+}
+.sg-form { display: flex; flex-direction: column; gap: 32px; width: 100%; }
+.sg-head { display: flex; flex-direction: column; gap: 32px; }
+.sg-logo { width: 48.26px; height: 80px; display: block; }
+.sg-titles { display: flex; flex-direction: column; gap: 12px; }
+.sg-title {
+  font-family: Lora, Georgia, serif; font-weight: 600;
+  font-size: 28px; line-height: 26px; letter-spacing: -1.12px; color: #16120e;
+}
+.sg-sub { font-size: 15px; letter-spacing: 0.18px; color: #202020; opacity: 0.8; }
+
+.sg-fields { display: flex; flex-direction: column; gap: 20px; }
+.sg-field { display: flex; flex-direction: column; gap: 7px; }
+.sg-label { font-weight: 600; font-size: 13px; color: #3a342c; }
+.sg-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sg-forgot { font-size: 12.5px; color: #6e6659; text-decoration: none; }
+.sg-forgot:hover { color: #16120e; text-decoration: underline; }
+.sg-input-box {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 46px; background: #fafafa; border: 1px solid #dfdfdf;
+  padding: 1px 13px 1px 15px;
+}
+.sg-input-box input {
+  flex: 1 1 auto; min-width: 0; border: 0; background: transparent; outline: none;
+  font-family: inherit; font-size: 15px; letter-spacing: 0.18px; color: #202020; height: 100%;
+}
+.sg-input-box input::placeholder { color: #202020; opacity: 1; }
+.sg-eye {
+  flex: none; width: 34px; height: 34px; border: 0; border-radius: 6px; background: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.sg-eye:hover { background: rgba(22, 18, 14, 0.06); }
+.sg-eye img { width: 18px; height: 18px; display: block; }
+
+.sg-consent { display: flex; flex-direction: column; gap: 16px; }
+.sg-checks { display: flex; flex-direction: column; gap: 12px; }
+.sg-check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.sg-box {
+  flex: none; margin-top: 1px; width: 20px; height: 20px;
+  border: 1px solid #202020; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+.sg-box img { width: 11px; height: 11px; display: none; }
+.sg-check.on .sg-box { background: #202020; }
+.sg-check.on .sg-box img { display: block; }
+.sg-check p { font-size: 12.5px; line-height: 19.375px; color: #6e6659; }
+.sg-check a { color: #16120e; text-decoration: underline; text-underline-position: from-font; }
+
+.sg-cta {
+  height: 48px; width: 100%; border: 0; background: #16120e; color: #fff; cursor: pointer;
+  font-family: inherit; font-weight: 600; font-size: 15px; text-transform: uppercase;
+}
+.sg-cta:hover { background: #2a241d; }
+
+.sg-alt { display: flex; flex-direction: column; gap: 20px; }
+.sg-alt-inner { display: flex; flex-direction: column; gap: 12px; }
+.sg-or { display: flex; align-items: center; gap: 14px; justify-content: center; }
+.sg-or i { flex: 1 1 0; height: 1px; background: #dfdfdf; opacity: 0; }
+.sg-or span {
+  font-weight: 500; font-size: 12px; letter-spacing: 1.44px;
+  text-transform: uppercase; color: #202020; white-space: nowrap;
+}
+.sg-social { display: flex; }
+.sg-social button {
+  flex: 1 1 0; min-width: 1px; height: 46px; margin-right: -1px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #fff; border: 1px solid #dfdfdf; cursor: pointer;
+  font-family: inherit; font-weight: 500; font-size: 14px; color: #16120e;
+}
+.sg-social button:last-child { margin-right: 0; }
+.sg-social button:hover { background: #fafafa; }
+.sg-social img { width: 17px; height: 17px; display: block; }
+.sg-social img.apple { width: 16px; height: 19px; }
+.sg-signin { font-size: 13.5px; letter-spacing: 0.18px; color: #6e6659; text-align: center; }
+.sg-signin a { color: #16120e; text-decoration: none; }
+.sg-signin a:hover { text-decoration: underline; }
+
+/* ---------- right: benefits panel ---------- */
+.sg-perks-panel {
+  flex: 1 1 60%; width: 60%; min-width: 1px; background: #efede3; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 40px; padding: 0 56px;
+}
+.sg-perks-head { display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; }
+.sg-eyebrow {
+  font-weight: 600; font-size: 12px; letter-spacing: 0.24px;
+  text-transform: uppercase; color: #c05e00; white-space: nowrap;
+}
+.sg-perks-title {
+  font-family: Lora, Georgia, serif; font-weight: 600;
+  font-size: 28px; line-height: 28px; letter-spacing: -0.28px; color: #16120e; width: 330px;
+}
+/* rolling stack: fixed 5-slot viewport, the track scrolls one slot at a time
+   and the card passing the centre line takes the focus state */
+.sg-cards {
+  width: 430px; max-width: 100%; height: 500px; overflow: hidden;
+  cursor: grab; touch-action: pan-x; outline-offset: 4px;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+.sg-cards:active { cursor: grabbing; }
+.sg-track { display: flex; flex-direction: column; will-change: transform; }
+.sg-track.animate { transition: transform .85s cubic-bezier(.22, 1, .36, 1); }
+.sg-slot { height: 100px; flex: none; display: flex; align-items: center; justify-content: center; }
+.sg-card {
+  display: flex; align-items: center; border-radius: 16px; padding: 16px 24px;
+  transition: width .85s cubic-bezier(.22,1,.36,1), min-height .85s cubic-bezier(.22,1,.36,1),
+              background-color .85s ease, opacity .85s ease, gap .85s ease, filter .85s ease;
+}
+.sg-card .tile, .sg-card .tile img, .sg-card .name, .sg-card .desc {
+  transition: width .85s cubic-bezier(.22,1,.36,1), height .85s cubic-bezier(.22,1,.36,1),
+              font-size .85s cubic-bezier(.22,1,.36,1), max-width .85s cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sg-scrim, .sg-wrap { transition: none; }
+  .sg-track.animate { transition: none; }
+  .sg-card, .sg-card .tile, .sg-card .tile img, .sg-card .name, .sg-card .desc { transition: none; }
+}
+.sg-card .tile {
+  flex: none; background: rgba(250, 144, 0, 0.12); border: 1px solid rgba(250, 144, 0, 0.28);
+  display: flex; align-items: center; justify-content: center;
+}
+.sg-card .body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sg-card .row { display: flex; align-items: center; }
+.sg-card .name { font-weight: 600; color: #16120e; white-space: nowrap; }
+.sg-card .desc { color: #6e6659; }
+/* size tiers: far (.42) / near (.72) / focus (1) */
+.sg-card.far  { width: 414px; min-height: 77.44px; gap: 14.08px; background: rgba(255,255,255,0.45); opacity: 0.42; }
+.sg-card.far  .tile { width: 36.96px; height: 36.96px; border-width: 0.88px; }
+.sg-card.far  .tile img { width: 17.6px; height: 17.6px; }
+.sg-card.far  .name { font-size: 14px; }
+.sg-card.far  .desc { font-size: 11px; line-height: 16.588px; max-width: 289.52px; }
+.sg-card.near { width: 422px; min-height: 82.72px; gap: 15.04px; background: rgba(255,255,255,0.62); opacity: 0.72; }
+.sg-card.near .tile { width: 39.48px; height: 39.48px; border-width: 0.94px; }
+.sg-card.near .tile img { width: 18.8px; height: 18.8px; }
+.sg-card.near .name { font-size: 15px; }
+.sg-card.near .desc { font-size: 12px; line-height: 17.719px; max-width: 309.26px; }
+.sg-card.focus {
+  width: 446px; min-height: 88px; gap: 16px; background: #fff;
+  filter: drop-shadow(0px 14px 18px rgba(172, 168, 149, 0.32));
+}
+.sg-card.focus .tile { width: 42px; height: 42px; }
+.sg-card.focus .tile img { width: 20px; height: 20px; }
+.sg-card.focus .name { font-size: 16px; }
+.sg-card.focus .desc { font-size: 13px; line-height: 18.85px; max-width: 328px; }
+.sg-card .row.with-chip { gap: 7.04px; }
+.sg-chip {
+  flex: none; background: rgba(22, 18, 14, 0.06); border-radius: 3.52px; padding: 2.64px 5.28px;
+  font-weight: 600; font-size: 8.8px; letter-spacing: 0.528px;
+  text-transform: uppercase; color: #6e6659; white-space: nowrap;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1100px) {
+  .sg-scrim { padding: 32px 24px; }
+  .sg-split { flex-direction: column; height: auto; }
+  .sg-form-panel, .sg-perks-panel { width: 100%; flex: 0 0 auto; }
+  .sg-form-panel { padding: 56px 40px 48px; }
+  .sg-perks-panel { padding: 48px 40px; }
+}
+@media (max-width: 767px) {
+  .sg-scrim { padding: 16px 12px; }
+  .sg-wrap { gap: 16px; }
+  .sg-form-panel { padding: 56px 20px 40px; }
+  .sg-perks-panel { padding: 40px 20px; gap: 28px; }
+  /* descriptions wrap to three lines at this width, so the slots need room */
+  .sg-cards, .sg-card.far, .sg-card.near, .sg-card.focus { width: 100%; }
+  .sg-cards { height: 600px; cursor: default; touch-action: auto; }
+  .sg-slot { height: 120px; }
+  .sg-card { padding: 16px; }
+  .sg-perks-title { width: auto; }
+  .sg-social { flex-direction: column; }
+  .sg-social button { flex: 0 0 46px; margin-right: 0; margin-bottom: -1px; }
+  .sg-social button:last-child { margin-bottom: 0; }
+}
+
+/* ---------- compact: the form on its own ----------
+   When the dialog interrupts something in progress — the Spelling Bee's guest
+   gate, two words in — the benefits rail is the wrong argument. That panel
+   pitches a cold visitor on why an account is worth having; this reader has
+   already decided to play and just needs to get back to it. Form only. */
+.sg-compact .sg-perks-panel { display: none; }
+.sg-compact .sg-wrap { width: 520px; }
+.sg-compact .sg-form-panel {
+  flex: 1 1 100%; width: 100%;
+  padding: 44px 56px;
+}
+@media (max-width: 767px) {
+  .sg-compact .sg-form-panel { padding: 36px 20px; }
+}
