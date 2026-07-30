@@ -16,9 +16,9 @@
   var HOVER_ZOOM = 1.35, PAN_EASE = 0.62;
   // radius of a land dot on the flat map, in viewBox units (grid spacing is 2.35)
   var DOT_R = 0.66;
-  // globe radius as a fraction of the smaller viewport axis — sized so the
-  // full sphere plus its atmospheric glow rests inside the viewport uncropped
-  var GLOBE_R = 0.40;
+  // globe radius as a fraction of the smaller viewport axis — rests zoomed
+  // out with generous sky around the sphere; the tour pushes in from here
+  var GLOBE_R = 0.36;
   /* The landmass doesn't span the full -180..180 viewBox — it runs roughly -164..180, so
      drawing it raw leaves a wide gap on the left and none on the right. This offset (set
      once from the generated points) recentres the drawn land, and is applied to the dots
@@ -187,7 +187,7 @@
     '.aj-gm-pulse{position:absolute;left:50%;top:50%;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--c);transform:translate(-50%,-50%) scale(.6);opacity:0;animation:ajGmPulse 3.2s cubic-bezier(.25,.6,.35,1) infinite;animation-delay:var(--d,0s);pointer-events:none}',
     '.aj-gm-pulse2{animation-delay:calc(var(--d,0s) + 1.6s)}',
     '@keyframes ajGmPulse{0%{transform:translate(-50%,-50%) scale(.55);opacity:.85}65%{opacity:.18}100%{transform:translate(-50%,-50%) scale(3.2);opacity:0}}',
-    '.aj-gm-core{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;width:23px;height:23px;border-radius:50%;background:color-mix(in srgb,var(--c) 86%,#000);color:#fff;font:800 9.5px/1 Arial,sans-serif;letter-spacing:.3px;box-shadow:0 0 0 2px rgba(10,10,10,.5),0 0 16px 2px color-mix(in srgb,var(--c) 65%,transparent);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease}',
+    '.aj-gm-core{position:relative;z-index:3;display:block;width:15px;height:15px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px rgba(10,10,10,.5),0 0 16px 2px color-mix(in srgb,var(--c) 65%,transparent);transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .35s ease}',
     '.aj-gm:hover .aj-gm-core,.aj-gm.is-active .aj-gm-core{transform:scale(1.32);box-shadow:0 0 0 2px #fff,0 0 26px 5px color-mix(in srgb,var(--c) 85%,transparent)}',
     '.aj-globe-scene.zoomed .aj-gm:not(.is-active),.aj-globe-gmarkers.focusing .aj-gm:not(.is-active){opacity:.22!important;filter:saturate(.4)}',
     '.aj-gm.is-active{z-index:6}',
@@ -333,7 +333,6 @@
     var yaw = 0.5, pitch = -0.35, tYaw = null, tPitch = null, dragging = false, lastX = 0, lastY = 0;
     var vYaw = 0, vPitch = 0;              // inertial spin after a released drag
     var uZoom = 1, tUZoom = 1;             // user zoom (wheel / HUD), eased
-    var dotStyle = 'depth';                // 'depth' = subtle dot matrix, 'clean' = outlines + soft fills
     var focusEntry = null, raf = null, DPR = Math.min(window.devicePixelRatio || 1, 2), gZoom = 1;
     var REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -483,15 +482,7 @@
       var src = WORLD || POLYS, closed = !WORLD;
       ctx.beginPath();
       for (var i = 0; i < src.length; i++) pathGeo(src[i], closed, cx, cy, R);
-      if (dotStyle === 'clean') {
-        // dot-free style: a soft landmass fill gives the continents presence,
-        // and the coastline work reads slightly brighter to carry the form
-        ctx.fillStyle = 'rgba(208,220,234,.05)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(202,211,222,.5)';
-      } else {
-        ctx.strokeStyle = 'rgba(196,204,214,.42)';
-      }
+      ctx.strokeStyle = 'rgba(196,204,214,.42)';
       ctx.lineWidth = 1; ctx.stroke();
     }
     function draw(now) {
@@ -499,6 +490,8 @@
       var w = wrap.clientWidth, h = wrap.clientHeight;
       // centred in the space left of the story panel, sized to leave breathing room
       var cx = w / 2 + mapDX, cy = h / 2, R = Math.min(w + 2 * mapDX, h) * GLOBE_R * gZoom * uZoom;
+      // the sphere silhouette must never clip top or bottom, whatever the zoom
+      R = Math.min(R, h / 2 - 16);
       updateRot();
       ctx.clearRect(0, 0, w, h);
       drawParticles(w, h);
@@ -513,16 +506,14 @@
       drawGraticule(cx, cy, R);
       drawCoastlines(cx, cy, R);
 
-      // refined dot-matrix landmass ("Depth" style): a whisper of texture —
-      // small, faint, cool-toned — depth cueing without competing with markers
-      if (dotStyle === 'depth') {
-        for (var di = 0; di < PTS.length; di++) {
-          var dq = rot(PTS[di]);
-          if (dq.z <= 0.02) continue;
-          var ds = 0.7 + 0.7 * dq.z;
-          ctx.fillStyle = 'rgba(198,212,226,' + (0.03 + 0.11 * dq.z).toFixed(3) + ')';
-          ctx.fillRect(cx + dq.x * R - ds / 2, cy - dq.y * R - ds / 2, ds, ds);
-        }
+      // refined dot-matrix landmass: a whisper of texture — small, faint,
+      // cool-toned — depth cueing without competing with markers
+      for (var di = 0; di < PTS.length; di++) {
+        var dq = rot(PTS[di]);
+        if (dq.z <= 0.02) continue;
+        var ds = 0.7 + 0.7 * dq.z;
+        ctx.fillStyle = 'rgba(198,212,226,' + (0.03 + 0.11 * dq.z).toFixed(3) + ')';
+        ctx.fillRect(cx + dq.x * R - ds / 2, cy - dq.y * R - ds / 2, ds, ds);
       }
 
       // the focused story's whole country lifts out of the outline work,
@@ -720,6 +711,7 @@
        hover) hands control back to the user; the tour resumes after a
        stretch of quiet. */
     var tourOn = !REDUCE_MOTION, tourIdx = -1, tourTimer = null, idleTimer = null;
+    var tourSeen = false;   // the globe rests zoomed-out for a beat before the first fly-in
     function stopTour() {
       tourOn = false;
       if (tourTimer) { clearTimeout(tourTimer); tourTimer = null; }
@@ -736,6 +728,13 @@
       if (!tourOn || mode !== 'globe' || inDetail) return;
       var cr = canvas.getBoundingClientRect();
       var vis = cr.width && cr.bottom > 0 && cr.top < window.innerHeight;
+      // first sighting: hold the wide resting view for a few seconds,
+      // then the tour zooms in and starts moving between countries
+      if (vis && !tourSeen) {
+        tourSeen = true;
+        tourTimer = setTimeout(tourStep, 3200);
+        return;
+      }
       if (vis && markers.length) {
         tourIdx = (tourIdx + 1) % markers.length;
         focusOn(markers[tourIdx], true);
@@ -748,7 +747,7 @@
       m.style.setProperty('--c', color);
       m.style.setProperty('--d', (rank * 0.28).toFixed(2) + 's');   // staggered sonar
       m.innerHTML = '<span class="aj-gm-pulse"></span><span class="aj-gm-pulse aj-gm-pulse2"></span>' +
-        '<span class="aj-gm-core">' + (rank < 9 ? '0' : '') + (rank + 1) + '</span>' +
+        '<span class="aj-gm-core"></span>' +
         '<span class="aj-gm-label">' + label + '</span>';
       return m;
     }
@@ -1001,42 +1000,14 @@
       if (dx * dx + dy * dy > LEAVE_RADIUS * LEAVE_RADIUS) reset();
     });
 
-    /* ---------- globe style toggle (Depth dots vs Clean outlines) ----------
-       FLAT mode is retired — the globe is the only view. The export's two
-       toggle buttons are repurposed to compare treatments: "Depth" keeps a
-       whisper of the dot matrix for texture; "Clean" drops it entirely and
-       lets soft landmass fills and the coastline work carry the form. */
+    /* ---------- single globe treatment ----------
+       FLAT mode and the style toggle are retired — the depth dot-matrix is
+       the one look, so the export's toggle cluster is removed outright. */
     var mode = 'globe';
     function findBtn(txt) { return [].slice.call(sec.querySelectorAll('button')).filter(function (b) { return b.textContent.trim().toUpperCase() === txt; })[0]; }
-    var depthBtn = findBtn('GLOBE'), cleanBtn = findBtn('FLAT');
-    /* the toggle docks inside the viewport, bottom-right — part of the
-       instrument (mirroring the zoom HUD) instead of chrome floating above */
-    var cluster = depthBtn && cleanBtn && depthBtn.parentElement === cleanBtn.parentElement ? depthBtn.parentElement : null;
-    if (cluster) {
-      wrap.appendChild(cluster);
-      cluster.style.cssText += ';position:absolute;right:24px;bottom:22px;z-index:8;width:auto;height:38px;padding:3px;gap:2px;border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:rgba(18,20,24,.72);backdrop-filter:blur(6px)';
-    }
-    function relabel(btn, txt) {
-      if (!btn) return;
-      var leaves = [].slice.call(btn.querySelectorAll('*')).filter(function (e) { return e.children.length === 0 && (e.textContent || '').trim(); });
-      (leaves[0] || btn).textContent = txt;
-    }
-    relabel(depthBtn, 'Depth'); relabel(cleanBtn, 'Clean');
-    function paint(btn, active) {
-      if (!btn) return;
-      btn.style.background = active ? '#ffffff' : 'transparent';
-      btn.style.borderRadius = '999px';
-      btn.style.height = '100%';
-      [].slice.call(btn.querySelectorAll('*')).forEach(function (e) { e.style.color = active ? '#111' : '#cfcfcf'; });
-    }
-    function setStyle(s) {
-      dotStyle = s;
-      paint(depthBtn, s === 'depth'); paint(cleanBtn, s === 'clean');
-      if (canvas.width) draw();   // repaint immediately with the new treatment
-    }
-    if (depthBtn) depthBtn.addEventListener('click', function () { setStyle('depth'); });
-    if (cleanBtn) cleanBtn.addEventListener('click', function () { setStyle('clean'); });
-    setStyle('depth');
+    var flatBtn = findBtn('FLAT'), globeBtn = findBtn('GLOBE');
+    var cluster = flatBtn && globeBtn && flatBtn.parentElement === globeBtn.parentElement ? flatBtn.parentElement : null;
+    if (cluster) cluster.remove();
 
     // the globe is always on — flat scene stays parked
     scene.style.display = 'none';
