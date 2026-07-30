@@ -80,17 +80,25 @@
      reader's name, the avatar takes the account colour, and the "Sign in" link
      goes. The header is inline on some pages and injected by aj-chrome.js on
      others, so this keeps re-checking briefly. */
+  /* index.html is the prototype's logged-out front page — aljazeera-foryou.html
+     is the signed-in home. So the homepage always shows the guest nav, whatever
+     the session says; signing in from there lands on For You. */
+  function isGuestHome() {
+    return /(^|\/)(index\.html)?$/.test(location.pathname.replace(/\?.*$/, ''));
+  }
+
   function personaliseHeader() {
     var name = null;
     try { name = sessionStorage.getItem('aj-user'); } catch (e) {}
     var signedIn = false;
     try { signedIn = !!sessionStorage.getItem('aj-signed-in'); } catch (e) {}
-    if (!signedIn) return true;                 // nothing to do, stop looking
+    if (!signedIn || isGuestHome()) return guestHeader();
 
     var chip = [].slice.call(document.querySelectorAll('header span, header b')).filter(function (s) {
       return /^Guest$/i.test((s.textContent || '').trim());
     })[0];
-    if (chip) chip.textContent = name || 'Sanya';
+    // 'Reader' was the old default and may still be in an open session
+    if (chip) chip.textContent = (!name || name === 'Reader') ? 'Sanya' : name;
 
     var signin = document.querySelector('.aj-signin');
     if (signin) signin.remove();
@@ -101,6 +109,28 @@
       avatar.style.background = '#5944e6';
     }
     return !!chip;
+  }
+
+  /* Signed out. The wording stays as the site ships it — "Welcome, Guest" with
+     the Sign in link beside it — and only the avatar changes: the warm portrait
+     gradient implies a person, so a guest gets a neutral placeholder instead.
+     That keeps the two states legible at a glance without rewording the nav. */
+  function guestHeader() {
+    var chip = [].slice.call(document.querySelectorAll('header span, header b')).filter(function (s) {
+      return /^Guest$/i.test((s.textContent || '').trim());
+    })[0];
+    if (!chip) return false;                     // header not up yet
+
+    var avatar = document.querySelector('header .size-\\[36px\\]');
+    if (avatar && !avatar.getAttribute('data-aj-guest')) {
+      avatar.setAttribute('data-aj-guest', '1');
+      avatar.style.backgroundImage = 'none';
+      avatar.style.background = '#eceaf1';
+      avatar.style.border = '1px solid #d9d5e2';
+      var glyph = avatar.querySelector('img');
+      if (glyph) glyph.style.opacity = '.45';    // a silhouette, not a person
+    }
+    return true;
   }
 
   function watchHeader() {

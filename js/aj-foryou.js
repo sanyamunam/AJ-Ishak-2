@@ -14,7 +14,10 @@
     var chip = [].slice.call(document.querySelectorAll('header span')).filter(function (s) {
       return /^Guest$/.test((s.textContent || '').trim());
     })[0];
-    if (chip) chip.textContent = 'Sanya';
+    // whoever actually signed in, falling back to the page's own persona
+    var who = null;
+    try { who = sessionStorage.getItem('aj-user'); } catch (e) {}
+    if (chip) chip.textContent = (!who || who === 'Reader') ? 'Sanya' : who;
 
     var avatar = document.querySelector('header .size-\\[36px\\]');
     if (avatar) {
