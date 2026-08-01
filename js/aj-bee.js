@@ -248,45 +248,42 @@
      to sign in to keep filing. AJ is a login product: the wall is an account,
      never a paywall. */
   var FREE_WORDS = 2;   // two on the house, then the gate
-  /* The guest gate. Two words in, the reader has shown they want to play, so
-     this asks them to sign in with the site's real dialog rather than a
-     puzzle-shaped imitation of one — and in its compact form, because the
-     benefits rail is an argument for a cold visitor, not for someone
-     mid-puzzle who just wants to carry on. */
+
+  /* One account dialog everywhere: the site's real sign-in popup, in its
+     standard form — same screen, same copy, wherever the reader meets it.
+     If its script ever fails to load, go to the real sign-in page rather
+     than showing a puzzle-shaped imitation of a login. */
+  function signedIn(email) {
+    var raw = String(email || '').split('@')[0].split(/[.\s_+-]/)[0];
+    S.user = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Sanya';
+    save();
+    closeModal();
+    renderAll();
+    toast('Signed in — streak saved', 'good');
+  }
+  /* The gate, NYT-style: two words land free, and the moment a guest tries
+     to submit a third, the sign-in dialog interrupts — over the board, which
+     stays visible behind it. The attempt is not accepted or scored; closing
+     the dialog changes nothing, and every further attempt raises it again. */
   function openGate() {
-    if (window.ajAuthPopup) {
-      window.ajAuthPopup.open('aljazeera-signin.html', {
-        compact: true,
-        title: 'Sign in to continue.',
-        sub: 'Your first two words are on the house. Signing in keeps your streak, rank and record.',
-        /* back to the board, mid-puzzle, with the words already found intact —
-           the reader came here to play, not to be moved to another page */
-        onSuccess: function (email) {
-          var raw = String(email).split('@')[0].split(/[.\s_+-]/)[0];
-          S.user = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Sanya';
-          save();
-          renderAll();
-          toast('Signed in — streak saved', 'good');
-          var e = $('entry'); if (e) e.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }
-      });
-      return;
-    }
-    // no popup on this page (the standalone bee): fall back to the local modal
-    openModal(
-      '<p class="mkick">You’re on a roll</p>' +
-      '<h3>Sign in to continue</h3>' +
-      '<p class="msub">Your first two words are on the house. A free Al Jazeera account keeps your streak, rank and record — here and on every device.</p>' +
-      '<input class="minput" id="signin-name" placeholder="Your name" maxlength="24" autocomplete="off">' +
-      '<div class="mrow"><button class="aj-btn aj-btn-gold" data-dosign="1">Sign in — it’s free</button>' +
-      '<button class="aj-link" data-x="1">Not now</button></div>'
-    );
-    setTimeout(function () { var i = $('signin-name'); if (i) i.focus(); }, 60);
+    if (!window.ajAuthPopup) { location.href = 'aljazeera-signin.html'; return; }
+    window.ajAuthPopup.open('aljazeera-signin.html', {
+      /* back to the board, mid-puzzle, with the words already found intact —
+         the reader came here to play, not to be moved to another page */
+      onSuccess: function (email) {
+        signedIn(email);
+        var e = $('entry'); if (e) e.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }
+    });
   }
 
   function submit() {
     if (!typed) return;
-    if (!S.user && S.found.length >= FREE_WORDS) { typed = ''; renderEntry(); openGate(); return; }
+    if (!S.user && S.found.length >= FREE_WORDS) {
+      typed = ''; renderEntry();
+      openGate();
+      return;
+    }
     var w = typed;
     typed = ''; renderEntry();
     if (w.length < 4) return reject('Too short');
@@ -321,10 +318,9 @@
 
     var after = rankIdx(score());
     if (after > before) rankUp(after);
-    // heads-up just before the gate: the third word closes the free preview
-    if (!S.user && S.found.length === FREE_WORDS) {
-      setTimeout(function () { if (!S.user) openGate(); }, 850);
-    }
+    /* No interruption here. The preview ends on the reader's next attempt,
+       not the moment their second word lands — the note under the keys says
+       the taste is spent, and the sign-in comes when they try to carry on. */
   }
   function reject(msg) { toast(msg); flashEntry(); }
 
@@ -463,22 +459,9 @@
   /* ---------------- sign in (login model) ---------------- */
   function openSignIn() {
     if (S.user) { openStats(); return; }
-    openModal(
-      '<p class="mkick">One account for everything</p>' +
-      '<h3>Sign in to Al Jazeera</h3>' +
-      '<p class="msub">News, games, streaks and your saved record — free, always.</p>' +
-      '<input class="minput" id="signin-name" placeholder="Your name" maxlength="24" autocomplete="off">' +
-      '<div class="mrow"><button class="aj-btn aj-btn-gold" data-dosign="1">Sign in</button></div>'
-    );
-    setTimeout(function () { var i = $('signin-name'); if (i) i.focus(); }, 60);
-  }
-  function completeSignIn() {
-    var i = $('signin-name');
-    S.user = ((i && i.value.trim()) || 'Sanya').split(' ')[0];
-    save();
-    closeModal();
-    toast('Signed in — streak saved', 'good');
-    renderAll();
+    closeModal();   // the stats sheet may be open underneath
+    if (!window.ajAuthPopup) { location.href = 'aljazeera-signin.html'; return; }
+    window.ajAuthPopup.open('aljazeera-signin.html', { onSuccess: signedIn });
   }
 
   /* ---------------- share ---------------- */
@@ -506,10 +489,6 @@
     if (b.classList.contains('mx') || b.hasAttribute('data-x')) closeModal();
     else if (b.hasAttribute('data-share')) share();
     else if (b.hasAttribute('data-signin')) openSignIn();
-    else if (b.hasAttribute('data-dosign')) completeSignIn();
-  });
-  modal.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && $('signin-name')) completeSignIn();
   });
 
   /* ---------------- boot ---------------- */

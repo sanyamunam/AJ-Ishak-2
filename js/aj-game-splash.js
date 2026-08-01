@@ -251,9 +251,21 @@
     return null;
   }
 
+  /* the safety-net poll only ticks while a splash is actually owed — an
+     idle page keeps no timers running */
+  var pollTimer = null;
+  function poll() {
+    if (pollTimer) return;
+    pollTimer = setInterval(function () {
+      trySplash();
+      if (!pending) { clearInterval(pollTimer); pollTimer = null; }
+    }, 300);
+  }
+
   function request(key) {
     if (!key) return;
     pending = key;
+    poll();
     /* A splash for a different game may already be up — the page can settle its
        hash after load, so the first guess ("no hash yet, so the quiz") can be
        wrong. Drop it and let the real arrival take over. */
@@ -300,12 +312,122 @@
     }, true);
   }
 
+  /* ---------- "Explore other Games" ----------
+     The hub renders a fixed pair of cards, so the game already on screen can
+     appear in its own list of other games. The card for the current game is
+     dropped, and — so the rail still offers two things to play — a card for a
+     game that isn't listed stands in, cloned from a sibling so it inherits the
+     rail's styling exactly. */
+  var STANDIN = { key: 'quiz', name: 'The Daily Quiz', href: 'aljazeera-games.html' };
+
+  function railEl() {
+    var asides = document.querySelectorAll('aside');
+    for (var i = 0; i < asides.length; i++) {
+      if (/Explore other Games/i.test(asides[i].textContent || '')) return asides[i];
+    }
+    return null;
+  }
+
+  /* Which game the reader is on. Read from what they did — the arrival hash,
+     the card they picked, the splash the panel last opened — never sniffed
+     from the panel's markup: the hub keeps the outgoing game's DOM around for
+     a beat, so reading the title there reports the game they just left. */
+  function currentKey() {
+    var marked = document.querySelector('[data-splash-for]');
+    return pending || (marked && marked.getAttribute('data-splash-for')) || keyFromHash();
+  }
+
+  function makeStandIn(model) {
+    var card = model.cloneNode(true);
+    card.setAttribute('data-aj-standin', STANDIN.key);
+    // retitle: the first leaf holding a game name
+    var leaf = [].slice.call(card.querySelectorAll('*')).filter(function (e) {
+      return e.children.length === 0 && keyFromText(e.textContent);
+    })[0];
+    if (leaf) leaf.textContent = STANDIN.name;
+    // swap the artwork for this game's own icon, kept at the rail's size
+    var art = card.querySelector('svg, img');
+    if (art && GAMES[STANDIN.key].icon) {
+      var box = art.getBoundingClientRect();
+      var holder = document.createElement('div');
+      holder.innerHTML = GAMES[STANDIN.key].icon;
+      var svg = holder.firstElementChild;
+      if (svg) {
+        var w = Math.round(box.width) || 46, h = Math.round(box.height) || 46;
+        svg.setAttribute('width', w); svg.setAttribute('height', h);
+        svg.style.width = w + 'px'; svg.style.height = h + 'px';
+        art.parentNode.replaceChild(svg, art);
+      }
+    }
+    /* How the click lands depends on what is playing.
+
+       From the bee: its embed already steps aside on this very click (the
+       card's text matches its "another game's card" pattern) and the bundle's
+       quiz is still rendered underneath — an in-place switch. Navigating too
+       reloaded the page on top of that hand-off, which is the glitch this
+       replaces: here the click is simply allowed through.
+
+       From the crossword: the bundle has no native way back to the quiz, so
+       this is a real navigation — and the page masks itself until the quiz
+       view is up, arriving as one clean state.
+
+       Whether the bee was up is recorded at pointerdown: by click time the
+       embed has already unmounted, so there is nothing left to test. */
+    var beeWasUp = false;
+    card.addEventListener('pointerdown', function () {
+      beeWasUp = !!document.querySelector('.aj-bee-hosted');
+    }, true);
+    card.addEventListener('click', function (e) {
+      if (beeWasUp) { beeWasUp = false; return; }   // in-place switch, no reload
+      e.preventDefault(); e.stopPropagation();
+      location.href = STANDIN.href;
+    }, true);
+    return card;
+  }
+
+  function syncRail() {
+    var rail = railEl();
+    if (!rail) return;
+    var cur = currentKey();
+    if (!cur) return;
+    var cards = [].slice.call(rail.children).filter(function (c) {
+      return !c.getAttribute('data-aj-standin') && keyFromText(c.textContent);
+    });
+    if (!cards.length) return;
+
+    var hid = null, live = 0;
+    cards.forEach(function (c) {
+      if (keyFromText(c.textContent) === cur) {
+        c.style.display = 'none';
+        c.setAttribute('data-aj-rail-self', '1');
+        hid = c;
+      } else {
+        if (c.getAttribute('data-aj-rail-self')) {
+          c.style.display = '';
+          c.removeAttribute('data-aj-rail-self');
+        }
+        live++;
+      }
+    });
+
+    var standIn = rail.querySelector('[data-aj-standin]');
+    var wanted = hid && live < 2 && cur !== STANDIN.key &&
+                 !cards.some(function (c) { return keyFromText(c.textContent) === STANDIN.key; });
+    if (wanted && !standIn) {
+      var model = cards.filter(function (c) { return c !== hid; })[0] || hid;
+      rail.insertBefore(makeStandIn(model), hid.nextSibling);
+    } else if (!wanted && standIn) {
+      standIn.remove();
+    }
+  }
+
   function init() {
     watchRail();
     request(keyFromHash());
+    syncRail();
+    setInterval(syncRail, 700);   // the hub swaps games in place; keep the rail honest
     // the panel mounts asynchronously; keep trying until the splash lands
     new MutationObserver(trySplash).observe(document.body, { childList: true, subtree: true });
-    setInterval(trySplash, 300);
     /* Only a hash that names a game is an arrival. The bundle clears the hash
        as it switches views, and treating that as "go to the quiz" threw an
        unrelated splash over whichever game was opening. */

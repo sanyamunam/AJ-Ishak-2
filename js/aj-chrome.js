@@ -150,10 +150,39 @@
     else document.body.appendChild(wrap);
   }
 
+  /* Bundle pages paint their own header/footer for a beat before the shared
+     chrome replaces them — pre-hide any chrome that isn't ours so the swap is
+     invisible instead of a flash of doubled header. Our injected chrome lives
+     inside #aj-chrome / #aj-chrome-footer, which the :not() excludes. */
+  function prehide(tags) {
+    if (document.getElementById('aj-chrome-prehide')) return;
+    var st = document.createElement('style');
+    st.id = 'aj-chrome-prehide';
+    st.textContent = tags.map(function (t) {
+      return t + ':not(#aj-chrome ' + t + '):not(#aj-chrome-footer ' + t + '){display:none!important}';
+    }).join('') + '#aj-hp{display:none!important}';
+    document.head.appendChild(st);
+  }
+
+  /* Partials are fetched once per session and kept in sessionStorage — repeat
+     navigations inject the chrome instantly (no pop-in, no refetch), and the
+     kept copy lets the recheck loop re-inject if a bundle wipes the body. */
+  var partials = {};
   function load(url, id, where, tag) {
+    var ck = 'ajChrome:' + url, cached = null;
+    try { cached = sessionStorage.getItem(ck); } catch (e) {}
+    function apply(html) {
+      partials[id] = { html: html, where: where, tag: tag };
+      stripBundleChrome(tag);
+      inject(id, html, where);
+    }
+    if (cached) { apply(cached); return Promise.resolve(); }
     return fetch(url + '?v=1')
       .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
-      .then(function (html) { stripBundleChrome(tag); inject(id, html, where); })
+      .then(function (html) {
+        try { sessionStorage.setItem(ck, html); } catch (e) {}
+        apply(html);
+      })
       .catch(function (e) { console.warn('[aj-chrome] ' + url + ' failed:', e); });
   }
 
@@ -190,12 +219,31 @@
     var needFooter = !hasRealFooter();
 
     var jobs = [], tags = [];
-    if (needHeader) { jobs.push(load(HEADER_URL, 'aj-chrome', 'top', 'header')); tags.push('header'); }
-    if (needFooter) { jobs.push(load(FOOTER_URL, 'aj-chrome-footer', 'bottom', 'footer')); tags.push('footer'); }
-    if (!jobs.length) return;
+    if (needHeader) tags.push('header');
+    if (needFooter) tags.push('footer');
+    if (!tags.length) return;
+    prehide(tags);   // before any fetch: the bundle's own chrome never paints
+    if (needHeader) jobs.push(load(HEADER_URL, 'aj-chrome', 'top', 'header'));
+    if (needFooter) jobs.push(load(FOOTER_URL, 'aj-chrome-footer', 'bottom', 'footer'));
 
     var sel = tags.join(',');
     var isAccount = /account/i.test(location.pathname);
+
+    /* If a bundle boot wipes the body, put the chrome back BEFORE the next
+       paint: MutationObserver callbacks run at the microtask checkpoint, so
+       the reader never sees a headerless frame. The 250ms loop below still
+       runs as housekeeping, but it is no longer what restores the header. */
+    new MutationObserver(function () {
+      Object.keys(partials).forEach(function (id) {
+        if (!document.getElementById(id)) {
+          var p = partials[id];
+          stripBundleChrome(p.tag);
+          inject(id, p.html, p.where);
+          if (id === 'aj-chrome') ensureScripts();
+        }
+      });
+    }).observe(document.body, { childList: true });
+
     Promise.all(jobs).then(function () {
       // the bundle may re-render its own chrome for a moment after mount
       if (needHeader) ensureScripts();
@@ -203,6 +251,15 @@
         stripBundleChrome(sel);
         ensureCss();          // bundle boot may have wiped the injected links
         ensureViewport();
+        // a bundle boot can wipe the whole body — put our chrome back
+        Object.keys(partials).forEach(function (id) {
+          if (!document.getElementById(id)) {
+            var p = partials[id];
+            stripBundleChrome(p.tag);
+            inject(id, p.html, p.where);
+            if (id === 'aj-chrome') ensureScripts();
+          }
+        });
         if (isAccount) { dropDuplicateStrip(); dropTicker(); anybodyFont(); placeSignout(); }
         if (++n > 20) clearInterval(iv);
       }, 250);

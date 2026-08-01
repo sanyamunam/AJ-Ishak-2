@@ -38,7 +38,10 @@
     /* slide the headlines ticker away while the chat is active */
     '.aj-ticker{transition:transform .5s cubic-bezier(.4,0,.7,.2),opacity .35s ease}',
     'html.aj-ask-lock .aj-ticker{transform:translateY(110%);opacity:0;pointer-events:none}',
-    /* while the chat is active, hide the page content behind it and lock scroll so the chat owns the full height */
+    /* While the chat is active the page content behind it is hidden and scroll
+       is locked, so the chat owns the full height. Tag names only cover pages
+       that use them — the bundle pages render into a plain <div> — so the real
+       hiding is done in JS (hidePageBehind), which works on any structure. */
     'html.aj-ask-lock main,html.aj-ask-lock footer{display:none}',
     'html.aj-ask-lock{overflow:hidden}',
     /* while the chat is up the page underneath is pinned — the only thing that
@@ -487,6 +490,30 @@
 
     var savedScroll = 0, closeTimer = null;
 
+    /* Hide the page behind the chat.
+
+       Pages wrap their content differently — index.html uses <main>, the games
+       hub renders the whole app into a plain <div id="dc-root"> — so hiding by
+       tag name left the bundle pages showing their content underneath the open
+       chat. Everything at the top level that doesn't carry the panel is hidden
+       instead, whatever it is called, and restored on close. */
+    var hiddenBehind = [];
+    function hidePageBehind() {
+      showPageBehind();
+      [].forEach.call(document.body.children, function (el) {
+        if (el === panel || el.contains(panel)) return;          // the chrome carrying the chat
+        var tag = el.tagName;
+        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'LINK' || tag === 'TEMPLATE') return;
+        if (el.classList.contains('sg-scrim')) return;           // an open dialog stays put
+        hiddenBehind.push([el, el.style.display]);
+        el.style.display = 'none';
+      });
+    }
+    function showPageBehind() {
+      hiddenBehind.forEach(function (pair) { pair[0].style.display = pair[1] || ''; });
+      hiddenBehind = [];
+    }
+
     function setOpen(next) {
       if (next === open) return;
       open = next;
@@ -505,6 +532,7 @@
         void bar.offsetHeight;                 // flush, so the collapse actually animates
         bar.classList.add('aj-bar-out');
 
+        hidePageBehind();
         panel.style.height = targetHeight() + 'px';
         panel.classList.remove('is-closing');
         panel.classList.add('is-open');
@@ -520,6 +548,7 @@
            the whole retraction — restoring their scroll now would carry the closing
            panel off-screen and the animation would simply never be seen. */
         document.documentElement.classList.remove('aj-ask-lock');
+        showPageBehind();
         window.scrollTo(0, 0);
 
         panel.style.height = '0px';

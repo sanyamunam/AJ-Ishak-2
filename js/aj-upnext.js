@@ -17,7 +17,10 @@
   'use strict';
 
   var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SHOW_AFTER = 600; /* px of scroll before the drawer slides in */
+  /* The drawer waits until the reader is genuinely near the end — about 70%
+     of the way through the page — instead of interrupting the first screens.
+     A fixed pixel trigger fired far too early on long reads. */
+  var SHOW_AFTER_PCT = 70;
 
   var CSS = [
     '.aj-upnext{position:fixed;left:0;right:0;bottom:0;z-index:9960;background:#fff;',
@@ -118,7 +121,7 @@
     fill.style.width = pct + '%';
 
     if (closed) return;
-    if (!shown && y > SHOW_AFTER) {
+    if (!shown && pct >= SHOW_AFTER_PCT) {
       shown = true;
       bar.classList.add('on');
     }

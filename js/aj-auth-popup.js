@@ -56,16 +56,10 @@
       var holder = document.createElement('div');
       holder.innerHTML = html;
       var scrim = holder.firstElementChild;
-      /* compact: the form only. Used when the dialog interrupts something the
-         reader is in the middle of — the benefits rail is a pitch for a cold
-         visitor, not for someone two words into a puzzle. */
-      if (opts.compact) scrim.classList.add('sg-compact');
-      if (opts.title) {
-        var h = scrim.querySelector('.sg-title');
-        if (h) h.textContent = opts.title;
-        var sub = scrim.querySelector('.sg-sub');
-        if (sub && opts.sub) sub.textContent = opts.sub;
-      }
+      /* One sign-in screen for the whole site: the dialog renders exactly as
+         aljazeera-signin.html ships it, wherever it is opened from. Callers
+         get a completion callback, not a say in how the screen looks — a
+         variant is another login screen, and there is only one. */
       document.body.appendChild(scrim);
       open = scrim;
       window.ajAuth.mount(scrim, {
@@ -88,6 +82,7 @@
   }
 
   function personaliseHeader() {
+    gateAccount();   // sign-in state may have just changed in a popup
     var name = null;
     try { name = sessionStorage.getItem('aj-user'); } catch (e) {}
     var signedIn = false;
@@ -146,7 +141,16 @@
   function gateAccount() {
     var signedIn = false;
     try { signedIn = !!sessionStorage.getItem('aj-signed-in'); } catch (e) {}
-    if (signedIn) return;
+    if (signedIn) {
+      /* Signing in can happen in a popup on this very page (the Spelling Bee
+         gate) — links gated earlier must be handed back, or the profile
+         picture keeps opening the sign-in for someone already signed in. */
+      [].forEach.call(document.querySelectorAll('a[data-aj-gated]'), function (a) {
+        a.setAttribute('href', a.getAttribute('data-aj-gated'));
+        a.removeAttribute('data-aj-gated');
+      });
+      return;
+    }
     [].forEach.call(document.querySelectorAll('a[href="aljazeera-account.html"]'), function (a) {
       a.setAttribute('data-aj-gated', a.getAttribute('href'));
       a.setAttribute('href', 'aljazeera-signin.html');

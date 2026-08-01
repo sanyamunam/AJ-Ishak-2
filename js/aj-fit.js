@@ -26,4 +26,32 @@
   // clientWidth shrinks once the scrollbar appears after first paint
   window.addEventListener('load', fit);
   window.addEventListener('resize', fit);
+
+  /* ---- scroll memory ----------------------------------------------------
+     Returning to a page lands exactly where the reader left it, app-style.
+     Position is saved per path on the way out and restored when arriving
+     from another page of the site (or via back/forward). A direct/external
+     arrival starts clean at the top. Bundle pages build their content late,
+     so restoration retries until the page is tall enough. */
+  (function () {
+    var key = 'ajScroll:' + location.pathname;
+    window.addEventListener('pagehide', function () {
+      try { sessionStorage.setItem(key, String(window.scrollY || document.documentElement.scrollTop || 0)); } catch (e) {}
+    });
+    var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+    var internal = document.referrer.indexOf(location.origin) === 0 &&
+                   document.referrer !== location.href;
+    if (!(internal || nav.type === 'back_forward')) return;
+    var saved = 0;
+    try { saved = parseFloat(sessionStorage.getItem(key)) || 0; } catch (e) {}
+    if (saved < 60) return;
+    var t0 = Date.now();
+    (function restore() {
+      if (document.documentElement.scrollHeight - window.innerHeight >= saved - 12) {
+        window.scrollTo(0, saved);
+      } else if (Date.now() - t0 < 4000) {
+        setTimeout(restore, 120);
+      }
+    })();
+  })();
 })();
