@@ -189,9 +189,13 @@
     }
 
     function pushEvent(ev) {
-      /* the old current line steps down into the dimmed history row */
-      fadeSwap(ui.prevText, function () { ui.prevText.textContent = current.t; });
-      fadeSwap(ui.prevMin, function () { ui.prevMin.textContent = minuteLabel(current.m); });
+      /* the old current line steps down into the dimmed history row.
+         Snapshot it NOW: the fade finishes after `current` has already been
+         reassigned, and reading it then would write the NEW line into the
+         history row — both rows showing the same text. */
+      var old = current;
+      fadeSwap(ui.prevText, function () { ui.prevText.textContent = old.t; });
+      fadeSwap(ui.prevMin, function () { ui.prevMin.textContent = minuteLabel(old.m); });
 
       /* …and the new line rises into the top row */
       ui.curMin.textContent = minuteLabel(ev.m);
@@ -205,8 +209,9 @@
     /* a line is "being typed" for a moment before it lands */
     function typeThenPush(ev) {
       if (REDUCED) { pushEvent(ev); return; }
-      fadeSwap(ui.prevText, function () { ui.prevText.textContent = current.t; });
-      fadeSwap(ui.prevMin, function () { ui.prevMin.textContent = minuteLabel(current.m); });
+      var old = current;   // same snapshot rule as pushEvent
+      fadeSwap(ui.prevText, function () { ui.prevText.textContent = old.t; });
+      fadeSwap(ui.prevMin, function () { ui.prevMin.textContent = minuteLabel(old.m); });
       ui.curMin.textContent = minuteLabel(ev.m);
       ui.curText.innerHTML = '<span class="ajlm-typing"><i></i><i></i><i></i></span>';
       current = ev;
