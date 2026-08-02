@@ -218,6 +218,12 @@
   }
   function backspace() { typed = typed.slice(0, -1); renderEntry(); }
   function onKey(e) {
+    /* Not every "keydown" on document is a real key press. Password managers,
+       autofill and browser extensions routinely dispatch synthetic events that
+       are plain Events rather than KeyboardEvents, and those carry no `key` at
+       all — reading .toUpperCase() off it threw and took the whole board down
+       mid-game. Anything without a key is, by definition, not a letter. */
+    if (typeof e.key !== 'string') return;
     if (!veil.hidden) { if (e.key === 'Escape') closeModal(); return; }
     if (game.hidden) return;
     var k = e.key.toUpperCase();
