@@ -30,10 +30,19 @@
   var DEMO = !!(+PACE || window.AJLM_MIN_MS);
   var START_MIN = 64;
 
+  /* The opening moments run on a fixed fast schedule: a page that claims to
+     be live has about three seconds to prove it before the reader decides it
+     is a mock. These land as follow-ups to the 64' red card the design ships
+     with, so no minute needs to pass first. */
+  var OPENERS = [
+    { at: 2400,  ev: { m: 64, t: 'VAR review complete — the straight red stands. France are down to ten' } },
+    { at: 7000,  tick: true },
+    { at: 11000, ev: { m: 65, t: 'Play resumes — France drop into a back four with ten men' } }
+  ];
+
   /* minute → what happened. `score` flips the board when it lands. */
   var FEED = [
-    { m: 65, t: '🟥 Kylian Mbappe (France) has been shown a straight red card' , seed: true },
-    { m: 66, t: 'Play resumes — France drop into a back four with ten men' },
+    { m: 66, t: 'Spain probe around the ten-man block — France refuse to break shape' },
     { m: 67, t: 'Olmo stings the palms of Maignan from twenty yards' },
     { m: 68, t: '🔁 Spain sub — Ferran Torres is on for Nico Williams' },
     { m: 70, t: '⚽ GOAL · Spain — Yamal curls one into the top corner. France 1–3 Spain', score: [1, 3] },
@@ -61,8 +70,8 @@
   var CSS = [
     /* on-air lamp: a steady heartbeat, the only motion that never stops */
     '.ajlm-dot{width:5px;height:5px;border-radius:50%;background:#fff;flex:none;position:relative}',
-    '.ajlm-dot::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(255,255,255,.7);animation:ajlmPing 1.9s cubic-bezier(.22,.61,.36,1) infinite}',
-    '@keyframes ajlmPing{0%{transform:scale(.4);opacity:.9}70%,100%{transform:scale(1.9);opacity:0}}',
+    '.ajlm-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(255,255,255,.85);animation:ajlmPing 1.9s cubic-bezier(.22,.61,.36,1) infinite}',
+    '@keyframes ajlmPing{0%{transform:scale(.4);opacity:1}70%,100%{transform:scale(2.3);opacity:0}}',
     /* the clock digits roll inside a clipped slot */
     '.ajlm-roll{display:inline-flex;overflow:hidden;vertical-align:bottom}',
     '.ajlm-roll>span{display:inline-block;font-variant-numeric:tabular-nums}',
@@ -157,10 +166,6 @@
     var feedAt = 0;
     var stoppageAt = 0;
 
-    /* seed: the design ships with the 64' red card as the current line —
-       the feed continues from it rather than replaying it */
-    while (feedAt < FEED.length && FEED[feedAt].seed) feedAt++;
-
     function minuteLabel(m) { return (m > 90 ? '90+' + (m - 90) : m) + '’'; }
     function badgeLabel(m)  { return 'LIVE · ' + (m > 90 ? '90+' + (m - 90) : m) + '’'; }
 
@@ -212,8 +217,19 @@
       }, 1100 + Math.random() * 500);
     }
 
+    /* the cold open: prove the feed is live before settling into the rhythm.
+       Delays scale with the pace override so demo runs stay proportionate. */
+    var scale = MIN_MS / 18000;
+    OPENERS.forEach(function (o) {
+      setTimeout(function () {
+        if (document.hidden && !DEMO) return;
+        if (o.tick) tickClock(); else typeThenPush(o.ev);
+      }, o.at * scale);
+    });
+
     /* one beat per match minute, lightly jittered so it never feels metronomic */
-    (function beat() {
+    var FIRST_BEAT = 16000 * scale;   // the regular rhythm takes over after the open
+    (function beat(first) {
       setTimeout(function () {
         if (document.hidden && !DEMO) { beat(); return; }   // no theatre for an empty room
 
@@ -227,8 +243,8 @@
           typeThenPush({ m: minute, t: line });
         }
         beat();
-      }, MIN_MS * (0.85 + Math.random() * 0.3));
-    })();
+      }, first || MIN_MS * (0.85 + Math.random() * 0.3));
+    })(FIRST_BEAT);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
