@@ -19,6 +19,7 @@ const TYPES = {
   '.webp': 'image/webp',
   '.woff2': 'font/woff2',
   '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
   '.mov': 'video/quicktime',
 };
 

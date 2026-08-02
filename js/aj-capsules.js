@@ -18,10 +18,18 @@
      the rest stay as static posters. Matched case-insensitively on the
      poster image's alt-text prefix. */
   var VIDEO_MAP = [
-    { alt: 'dr hussam abu safia', src: 'assets/dr-hussam.mp4' },
-    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.mp4' }
+    { alt: 'dr hussam abu safia', src: 'assets/dr-hussam.webm' },
+    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.webm' }
   ];
   var FALLBACK_MS = 8000;   // rotation cadence if the video can't play at all
+
+  /* Clips ship as VP9 WebM. Safari only gained VP9 support in 16, so anything
+     older is handed the original MP4 rather than a dead card. */
+  function playable(src) {
+    var probe = document.createElement('video');
+    if (probe.canPlayType && probe.canPlayType('video/webm; codecs="vp9"')) return src;
+    return src.replace(/\.webm$/, '.mp4');
+  }
 
   var players = [], live = -1;   // players: {card, src} for video-backed cards
   var video = null, playPromise = null, raf = 0, fallbackTimer = 0;
@@ -137,7 +145,7 @@
     if (fill) { fill.style.transition = ''; fill.style.width = '0'; }
 
     var v = document.createElement('video');
-    v.src = players[live].src;
+    v.src = playable(players[live].src);
     v.muted = true;
     v.playsInline = true;
     v.setAttribute('playsinline', '');

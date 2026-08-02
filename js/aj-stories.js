@@ -46,9 +46,17 @@
   /* Cards whose image alt matches an entry here play a video slide in the
      viewer instead of a still. Matched case-insensitively on alt prefix. */
   var VIDEO_MAP = [
-    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.mp4' },
-    { alt: 'dr hussam abu safia', src: 'assets/dr-hussam.mp4' }
+    { alt: 'philippines volcano erupts', src: 'assets/capsule%20video.webm' },
+    { alt: 'dr hussam abu safia', src: 'assets/dr-hussam.webm' }
   ];
+
+  /* Clips ship as VP9 WebM. Safari only gained VP9 support in 16, so anything
+     older is handed the original MP4 rather than a blank slide. */
+  function playable(src) {
+    var probe = document.createElement('video');
+    if (probe.canPlayType && probe.canPlayType('video/webm; codecs="vp9"')) return src;
+    return src.replace(/\.webm$/, '.mp4');
+  }
 
   var slides = [];      // {src, title, dur, video?}
   var idx = 0, timer = null, startTs = 0, elapsed = 0, paused = false, veil = null;
@@ -147,7 +155,8 @@
       // Video slide: play inline, advance when the clip ends.
       img.style.display = 'none';
       vid.style.display = '';
-      if (vid.getAttribute('src') !== s.video) vid.src = s.video;
+      var vsrc = playable(s.video);
+      if (vid.getAttribute('src') !== vsrc) vid.src = vsrc;
       else vid.currentTime = 0;
       vid.onended = function () { go(idx + 1); };
       vid.play().catch(function () {});
