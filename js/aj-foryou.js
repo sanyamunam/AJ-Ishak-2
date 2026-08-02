@@ -62,13 +62,39 @@
     card.addEventListener('focusout', stop);
   }
 
+  /* Follow / unfollow a topic.
+
+     The trailing affordance is an icon, not a character: writing textContent
+     into it (as this once did) deletes the <svg> and leaves a bare "+" glyph
+     sized for an 18px icon — the chip looks broken from the first tap and
+     never recovers. Both marks are drawn as SVG and swapped whole. */
+  var CHIP_PLUS =
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+    '<path d="M8 2v12M2 8h12"/></svg>';
+  var CHIP_MINUS =
+    '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">' +
+    '<circle cx="8" cy="8" r="7.5" stroke-width="1"/><path d="M4.5 8h7" stroke-width="2"/></svg>';
+
+  function paintChip(chip) {
+    var on = chip.getAttribute('aria-pressed') === 'true';
+    var action = chip.querySelector('.fy-chip__action');
+    if (action) action.innerHTML = on ? CHIP_MINUS : CHIP_PLUS;
+    chip.setAttribute('aria-label', (on ? 'Unfollow ' : 'Follow ') + chipLabel(chip));
+  }
+
+  function chipLabel(chip) {
+    var inner = chip.querySelector('.fy-chip__inner');
+    return ((inner ? inner.textContent : chip.textContent) || '').trim();
+  }
+
   function interestChips() {
     [].forEach.call(document.querySelectorAll('.fy-chip'), function (chip) {
+      if (chip.getAttribute('data-fy-chip')) return;
+      chip.setAttribute('data-fy-chip', '1');
+      paintChip(chip);                       // normalise whatever the markup shipped
       chip.addEventListener('click', function () {
-        var on = chip.getAttribute('aria-pressed') === 'true';
-        chip.setAttribute('aria-pressed', on ? 'false' : 'true');
-        var action = chip.querySelector('.fy-chip__action');
-        if (action) action.textContent = on ? '+' : '−';
+        chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        paintChip(chip);
       });
     });
   }

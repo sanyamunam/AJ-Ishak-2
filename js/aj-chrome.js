@@ -7,7 +7,7 @@
 (function () {
   'use strict';
 
-  var CSS_FILES = ['css/aj-shared.css', 'css/aj-fonts.css', 'css/aj-chrome.css', 'css/aj-responsive.css', 'css/aj-aura-orb.css'];
+  var CSS_FILES = ['css/aj-shared.css', 'css/aj-fonts.css', 'css/aj-chrome.css', 'css/aj-responsive.css', 'css/aj-aura-orb.css', 'css/aj-motion.css'];
   var HEADER_URL = 'partials/aj-header.html';
   var FOOTER_URL = 'partials/aj-footer.html';
 
@@ -120,6 +120,21 @@
     if (legacy) legacy.remove();
   }
 
+  /* Bundle pages rebuild <head> at boot, which also throws away the page's
+     <title> — the tab is left showing the raw URL. Captured here while the
+     original head is still intact, and put back if it goes missing. */
+  /* On the bundle pages this script is itself part of the rebuilt document, so
+     by the time it runs the original <title> is already gone — there is nothing
+     live to capture. Those two pages name themselves here instead. */
+  var TITLES = {
+    'aljazeera-account.html': 'Al Jazeera — Account',
+    'aljazeera-games.html': 'Al Jazeera — Games'
+  };
+  var PAGE_TITLE = document.title || TITLES[(location.pathname.split('/').pop() || '')] || '';
+  function ensureTitle() {
+    if (PAGE_TITLE && !document.title) document.title = PAGE_TITLE;
+  }
+
   /* The header is inert without its behaviour scripts — load them after injection
      so the ask bar expands and the ticker scrolls exactly as on the homepage. */
   /* bundle pages rebuild <head> at boot, dropping the static viewport meta */
@@ -132,7 +147,7 @@
   }
 
   function ensureScripts() {
-    ['js/aj-ask.js', 'js/aj-mobile-nav.js', 'js/aj-fit.js'].forEach(function (src) {
+    ['js/aj-ask.js', 'js/aj-mobile-nav.js', 'js/aj-fit.js', 'js/aj-motion.js'].forEach(function (src) {
       if (document.querySelector('script[src^="' + src + '"]')) return;
       var s = document.createElement('script');
       s.src = src + '?v=1';
@@ -207,6 +222,7 @@
   function init() {
     ensureCss();
     ensureViewport();
+    ensureTitle();
     scopeLinkColours();
     if (/account/i.test(location.pathname)) {
       whiteBackground(); anybodyFont();
@@ -251,6 +267,7 @@
         stripBundleChrome(sel);
         ensureCss();          // bundle boot may have wiped the injected links
         ensureViewport();
+        ensureTitle();
         // a bundle boot can wipe the whole body — put our chrome back
         Object.keys(partials).forEach(function (id) {
           if (!document.getElementById(id)) {

@@ -1,0 +1,103 @@
+/* ============================================================================
+   AJ MOTION — restrained micro-interaction layer. v2.
+
+   Ground rules (Emil Kowalski / HIG / Linear):
+   · zero layout change: transform + opacity only, nothing moves house
+   · every rule is feedback, continuity, or focus — nothing decorative loops
+   · strong custom easings; stock CSS curves are too weak to feel intentional
+   · exact properties in every transition — never `transition: all`
+   · hover states gated to real pointers; press states everywhere
+   · the site's own reveal system (aj-lazy's .aj-reveal) is left alone —
+     this file deliberately ships NO scroll-reveal of its own
+   · prefers-reduced-motion stands the whole layer down
+   ========================================================================== */
+
+:root {
+  --mo-out: cubic-bezier(0.23, 1, 0.32, 1);      /* strong ease-out  */
+  --mo-inout: cubic-bezier(0.77, 0, 0.175, 1);   /* strong in-out    */
+}
+
+/* ---------------------------------------------------------------- */
+/* PAGE TRANSITIONS                                                  */
+/* Native cross-document view transitions: same-origin navigations   */
+/* cross-fade instead of hard-cutting. Pure CSS, no JS on the path,  */
+/* silently absent in browsers without support.                      */
+/* ---------------------------------------------------------------- */
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 0.2s; }
+
+/* NB: no page-level `body { animation: fade-in }` here. The games and account
+   bundles run their own hold-and-fade on body opacity while they unpack, and a
+   second owner of that property produces a visible double fade — one property,
+   one owner. Cross-document transitions above already cover page entry. */
+@keyframes ajMoIn { from { opacity: 0; } }
+
+/* ---------------------------------------------------------------- */
+/* CARDS — tactile, not theatrical.                                  */
+/* js/aj-motion.js tags card links + their clipped media wrapper.    */
+/* Hover: 2px lift, image breathes 3%. Press: settles.               */
+/* ---------------------------------------------------------------- */
+.aj-mo-media img,
+.aj-mo-media video {
+  transition: transform 0.55s var(--mo-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  a.aj-mo-card { transition: translate 0.28s var(--mo-out); }
+  a.aj-mo-card:hover { translate: 0 -2px; }
+  a.aj-mo-card:hover .aj-mo-media img,
+  a.aj-mo-card:hover .aj-mo-media video { transform: scale(1.03); }
+}
+a.aj-mo-card:active { translate: 0 0; }
+
+/* ---------------------------------------------------------------- */
+/* PRESSABLES — every press is acknowledged (100–160ms feedback).    */
+/* `scale` is an independent property: it composes with transforms   */
+/* a control already carries instead of clobbering them.             */
+/* ---------------------------------------------------------------- */
+:where(button, [role="button"], input[type="submit"]) {
+  transition: scale 140ms var(--mo-out);
+}
+:where(button, [role="button"], input[type="submit"]):active {
+  scale: 0.97;
+}
+/* controls that already ship their own press feedback keep sole ownership */
+:where(.fy-chip):active { scale: none; }
+
+/* ---------------------------------------------------------------- */
+/* NAVIGATION — header links draw a 2px underline on hover.          */
+/* ---------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  header nav a { position: relative; }
+  header nav a::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 100%; bottom: -3px;
+    height: 2px;
+    background: #fa9000;
+    transition: right 0.22s var(--mo-out);
+  }
+  header nav a:hover::after { right: 0; }
+}
+
+/* ---------------------------------------------------------------- */
+/* IMAGES — late arrivals fade up instead of popping.                */
+/* js/aj-motion.js marks only images still in flight; cache hits     */
+/* render instantly, untouched.                                      */
+/* ---------------------------------------------------------------- */
+img.aj-mo-loading { opacity: 0; }
+img.aj-mo-loaded { animation: ajMoIn 0.4s ease-out; }
+
+/* ---------------------------------------------------------------- */
+/* REDUCED MOTION — the layer stands down; only gentle fades remain. */
+/* ---------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+  .aj-mo-media img, .aj-mo-media video { transition: none; }
+  a.aj-mo-card, a.aj-mo-card:hover { translate: none; }
+  :where(button, [role="button"], input[type="submit"]):active { scale: none; }
+  header nav a::after { transition: none; }
+  img.aj-mo-loading { opacity: 1; }
+  img.aj-mo-loaded { animation: none; }
+}

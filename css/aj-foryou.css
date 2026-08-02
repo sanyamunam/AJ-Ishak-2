@@ -1126,12 +1126,28 @@ body.fy footer .max-w-\[1440px\] { padding-inline: 24px; }
 
 .fy-chip__inner { display: flex; align-items: center; gap: 8px; }
 .fy-chip svg { width: 18px; height: 18px; }
-.fy-chip__action { width: 16px; height: 16px; flex: none; }
+/* the +/− mark: its own box, so the 18px topic-icon rule above can't stretch
+   it, and both states occupy exactly the same space — no reflow on toggle */
+.fy-chip__action {
+  width: 16px; height: 16px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.fy-chip__action svg { width: 16px; height: 16px; display: block; }
+
+.fy-chip { cursor: pointer; transition: background .18s ease, border-color .18s ease, color .18s ease; }
+.fy-chip:hover { border-color: #9ca3af; }
+.fy-chip:active { transform: scale(.98); }
 
 .fy-chip[aria-pressed='true'] {
   background: #111827;
   border-color: #111827;
   color: #fff;
+}
+.fy-chip[aria-pressed='true']:hover { background: #000; border-color: #000; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fy-chip { transition: none; }
+  .fy-chip:active { transform: none; }
 }
 
 .fy-add { display: flex; padding-top: 12px; }

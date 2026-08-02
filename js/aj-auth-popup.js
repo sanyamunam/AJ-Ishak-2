@@ -128,10 +128,30 @@
     return true;
   }
 
+  /* The account dashboard ships a hardcoded profile name from the original
+     export, so signing in as one person and opening your profile showed
+     somebody else's. The greeting follows the session instead. It renders
+     late (the bundle rebuilds the page at boot), hence the retries. */
+  function personaliseAccount() {
+    if (!/account/i.test(location.pathname)) return true;
+    var signedIn = false, name = null;
+    try {
+      signedIn = !!sessionStorage.getItem('aj-signed-in');
+      name = sessionStorage.getItem('aj-user');
+    } catch (e) {}
+    if (!signedIn) return true;
+    var who = (!name || name === 'Reader') ? 'Sanya' : name;
+    var heading = document.querySelector('#dc-root h1');
+    if (!heading) return false;                       // dashboard not mounted yet
+    if (heading.textContent.trim() !== who) heading.textContent = who;
+    return true;
+  }
+
   function watchHeader() {
-    if (personaliseHeader()) return;
+    if (personaliseHeader() && personaliseAccount()) return;
     var n = 0, iv = setInterval(function () {
-      if (personaliseHeader() || ++n > 40) clearInterval(iv);
+      var done = personaliseHeader();
+      if ((personaliseAccount() && done) || ++n > 40) clearInterval(iv);
     }, 150);
   }
 

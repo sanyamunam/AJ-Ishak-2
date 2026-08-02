@@ -24,7 +24,7 @@
 
   function section() {
     var lbl = [].slice.call(document.querySelectorAll('*')).filter(function (e) {
-      return e.children.length === 0 && /TEST AGAINST THE TIME/i.test(e.textContent);
+      return e.children.length === 0 && /^(games|test against the time)$/i.test((e.textContent || '').trim());
     })[0];
     return lbl ? lbl.closest('section') : null;
   }

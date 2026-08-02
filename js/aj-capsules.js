@@ -68,7 +68,7 @@
   function findRow() {
     var secs = document.querySelectorAll('section');
     for (var i = 0; i < secs.length; i++) {
-      if (/bg-\[#171717\]/.test(secs[i].className) && /CAPSULES/.test(secs[i].textContent || '')) {
+      if (/bg-\[#171717\]/.test(secs[i].className) && /60-second films/i.test(secs[i].textContent || '')) {
         var rows = secs[i].querySelectorAll(':scope > div.flex');
         for (var r = 0; r < rows.length; r++) {
           if (rows[r].querySelector('a')) return rows[r];

@@ -150,6 +150,9 @@
     /* ---- chips + input ---- */
     '.aj-ask-chips{display:flex;flex-wrap:wrap;gap:12px;flex:none;padding:14px 0}',
     '.aj-ask-chip{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.66);border:1px solid rgba(17,17,24,.06);padding:11px 16px;font-size:13px;color:#202020;cursor:pointer;transition:background .2s ease,transform .2s ease}',
+    /* the prompt roller's track — the 15px rhythm moves off the clipped column
+       and onto the track with it, so the step stays exactly one line + one gap */
+    '.aj-ask-track{display:flex;flex-direction:column;gap:15px;will-change:transform}',
     '.aj-ask-chip:hover{background:#fff;transform:translateY(-1px)}',
     '.aj-ask-chip i{font-style:normal;color:#7c5cf0;font-size:12px}',
     '.aj-ask-form{display:flex;align-items:center;gap:12px;background:#fff;padding:14px 18px;flex:none;box-shadow:0 10px 24px rgba(31,35,84,.10)}',
@@ -263,6 +266,65 @@
     return best;
   }
 
+  /* ---------------- the suggested-prompt roller ----------------
+
+     The export already ships the right anatomy for this: an 18px-tall, clipped
+     column holding the prompts stacked 15px apart. It was only ever showing the
+     first one. So this doesn't build a new widget — it just moves the column the
+     designer already drew, one line at a time.
+
+     The lines are wrapped in a track that slides by exactly one line-plus-gap;
+     once a line has left the top it is moved to the back, so the list is
+     endless without ever duplicating markup. The column is widened to its
+     longest prompt first: the export's fixed 238px was cut for one short line
+     and would clip the rest, and a width that changed per line would make the
+     whole bar twitch every few seconds. */
+  function initRoller(bar) {
+    var clip = bar.querySelector('.aj-ask-roll');
+    if (!clip || clip.getAttribute('data-roll')) return;
+    var lines = [].slice.call(clip.children);
+    if (lines.length < 2) return;
+    clip.setAttribute('data-roll', '1');
+
+    var STEP = 33;          // 18px line + 15px gap, straight from the export
+    var HOLD = 3400;        // long enough to read a full question
+
+    var track = document.createElement('div');
+    track.className = 'aj-ask-track';
+    lines.forEach(function (p) { p.style.whiteSpace = 'nowrap'; track.appendChild(p); });
+    clip.appendChild(track);
+
+    /* size to the longest line, once, so nothing is clipped and nothing twitches */
+    var widest = 0;
+    /* scrollWidth, not offsetWidth: the lines are w-full inside a fixed-width
+       box, so their own box is the box — only the overflowing content knows how
+       long the sentence really is. It is also in layout px, unaffected by the
+       page's zoom-based fit. */
+    lines.forEach(function (p) { widest = Math.max(widest, p.scrollWidth); });
+    if (widest) clip.style.width = widest + 'px';
+
+    if (REDUCED) return;    // the first prompt simply stays put
+
+    var timer = null;
+    function roll() {
+      timer = setTimeout(function () {
+        if (document.hidden || bar.classList.contains('aj-bar-out')) { roll(); return; }
+        track.style.transition = 'transform .58s cubic-bezier(.16,1,.3,1)';
+        track.style.transform = 'translateY(-' + STEP + 'px)';
+        setTimeout(function () {
+          /* the line that just left the top goes to the back, and the track
+             snaps home untransitioned — the seam is invisible because the
+             next line is already sitting exactly where the last one was */
+          track.style.transition = 'none';
+          track.appendChild(track.firstElementChild);
+          track.style.transform = 'none';
+          roll();
+        }, 600);
+      }, HOLD);
+    }
+    roll();
+  }
+
   function init() {
     var bar = document.querySelector('.aj-ask-gradient');
     if (!bar || bar.getAttribute('data-ask')) return;
@@ -272,6 +334,8 @@
     st.id = 'aj-ask-style';
     st.textContent = CSS;
     document.head.appendChild(st);
+
+    initRoller(bar);
 
     // tag the black top strip so it can collapse while the chat is active
     var topStrip = document.querySelector('header [class*="2d2c2c"]');

@@ -67,6 +67,20 @@
     S.slips = S.slips || [];
     S.celebrated = S.celebrated || {};
     if (S.tipsLeft === undefined) S.tipsLeft = 3;
+    /* Who is signed in is the SITE's business, never the game's. This used to
+       persist its own copy in localStorage, which outlives the session — after
+       one sign-in the guest gate could never fire again on that browser, so the
+       third word was silently accepted forever. Re-read every load. */
+    S.user = siteUser();
+  }
+
+  /* the site's sign-in session (set by the shared auth dialog) */
+  function siteUser() {
+    try {
+      if (!sessionStorage.getItem('aj-signed-in')) return null;
+      var n = sessionStorage.getItem('aj-user');
+      return (!n || n === 'Reader') ? 'Sanya' : n;
+    } catch (e) { return null; }
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -254,8 +268,10 @@
      If its script ever fails to load, go to the real sign-in page rather
      than showing a puzzle-shaped imitation of a login. */
   function signedIn(email) {
+    /* the dialog writes the site session before calling back, so that is the
+       name to trust; the typed address is only a fallback */
     var raw = String(email || '').split('@')[0].split(/[.\s_+-]/)[0];
-    S.user = raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Sanya';
+    S.user = siteUser() || (raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : 'Sanya');
     save();
     closeModal();
     renderAll();
