@@ -1,0 +1,50 @@
+﻿{
+    "duration":  47.027,
+    "sentences":  [
+                      {
+                          "text":  "Still the GOAT: Ronaldo-fever hits Toronto before Portugal versus Croatia.",
+                          "start":  0,
+                          "end":  5.628
+                      },
+                      {
+                          "text":  "An Al Jazeera podcast.",
+                          "start":  5.628,
+                          "end":  8.107
+                      },
+                      {
+                          "text":  "Hours before kickoff, downtown Toronto has turned red and green.",
+                          "start":  8.107,
+                          "end":  13.166
+                      },
+                      {
+                          "text":  "Portugal fans have crossed the Atlantic in their thousands, and every one of them seems to be wearing the number seven.",
+                          "start":  13.166,
+                          "end":  20.434
+                      },
+                      {
+                          "text":  "At forty-one, Cristiano Ronaldo is playing in his sixth World Cup, a record no other man has touched.",
+                          "start":  20.434,
+                          "end":  27.933
+                      },
+                      {
+                          "text":  "Tonight he faces Croatia, and a familiar rival in Luka Modric, for a place in the quarterfinals.",
+                          "start":  27.933,
+                          "end":  35.066
+                      },
+                      {
+                          "text":  "The question hanging over the city is a simple one.",
+                          "start":  35.066,
+                          "end":  38.599
+                      },
+                      {
+                          "text":  "Is he still the greatest of all time?",
+                          "start":  38.599,
+                          "end":  41.414
+                      },
+                      {
+                          "text":  "For the fans queuing outside the stadium since dawn, the answer was never in doubt.",
+                          "start":  41.414,
+                          "end":  47.027
+                      }
+                  ]
+}

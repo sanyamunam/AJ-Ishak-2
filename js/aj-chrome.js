@@ -126,9 +126,13 @@
   /* On the bundle pages this script is itself part of the rebuilt document, so
      by the time it runs the original <title> is already gone — there is nothing
      live to capture. Those two pages name themselves here instead. */
+  /* the hosted preview serves these under neutral aliases — same pages,
+     different last path segment */
   var TITLES = {
     'aljazeera-account.html': 'Al Jazeera — Account',
-    'aljazeera-games.html': 'Al Jazeera — Games'
+    'aljazeera-games.html': 'Al Jazeera — Games',
+    'account': 'Al Jazeera — Account',
+    'games': 'Al Jazeera — Games'
   };
   var PAGE_TITLE = document.title || TITLES[(location.pathname.split('/').pop() || '')] || '';
   function ensureTitle() {

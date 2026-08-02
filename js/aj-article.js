@@ -8,7 +8,8 @@
 (function () {
   'use strict';
 
-  if (!/aljazeera-article/i.test(location.pathname)) return;
+  /* the hosted preview serves this page under the neutral alias /story */
+  if (!/aljazeera-article|(^|\/)story$/i.test(location.pathname)) return;
 
   var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
