@@ -285,12 +285,16 @@
     if (instrBlock) instrBlock.style.display = 'none';
 
     /* ---- immersive height: the section is a destination, not a block ----
-       The export fixes the band at 900px. It now fills the VISUAL viewport:
-       the whole page runs on a 1920px canvas scaled by body{zoom}, so one
-       viewport of layout pixels is innerHeight/zoom (1080 on a 16:9 screen,
-       1200 on 16:10 — never less than the design's 900). Band, left panel
-       and story panel all take the same height, so the story list grows
-       with the globe instead of stopping short of it. */
+       The export fixes the band at 900px; a full 100vh proved too dominant.
+       The sweet spot is ~85% of the visual viewport: tall enough to feel
+       cinematic, short enough that a sliver of the next section shows above
+       the fold and invites the scroll to continue. The whole page runs on a
+       1920px canvas scaled by body{zoom}, so 85vh in layout pixels is
+       innerHeight * 0.85 / zoom (about 918 on a 16:9 screen, 1020 on 16:10
+       — never less than the design's 900). Band, left panel and story panel
+       all take the same height, so the story list grows with the globe
+       instead of stopping short of it. */
+    var HERO_VH = 0.85;
     var band = root.parentElement;
     function sizeSection() {
       if (isStacked()) {
@@ -298,7 +302,7 @@
         return;
       }
       var zoom = parseFloat(document.body.style.zoom) || 1;
-      var target = Math.max(900, Math.min(1560, Math.round(window.innerHeight / zoom)));
+      var target = Math.max(900, Math.min(1320, Math.round(window.innerHeight * HERO_VH / zoom)));
       band.style.height = target + 'px';
       leftPanel.style.height = target + 'px';
       rightPanel.style.height = target + 'px';
