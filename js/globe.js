@@ -283,11 +283,42 @@
       return c !== wrap && c !== headRow && /drag to rotate/i.test(c.textContent || '');
     })[0] || null;
     if (instrBlock) instrBlock.style.display = 'none';
+
+    /* ---- immersive height: the section is a destination, not a block ----
+       The export fixes the band at 900px. It now fills the VISUAL viewport:
+       the whole page runs on a 1920px canvas scaled by body{zoom}, so one
+       viewport of layout pixels is innerHeight/zoom (1080 on a 16:9 screen,
+       1200 on 16:10 — never less than the design's 900). Band, left panel
+       and story panel all take the same height, so the story list grows
+       with the globe instead of stopping short of it. */
+    var band = root.parentElement;
+    function sizeSection() {
+      if (isStacked()) {
+        band.style.height = ''; leftPanel.style.height = ''; rightPanel.style.height = '';
+        return;
+      }
+      var zoom = parseFloat(document.body.style.zoom) || 1;
+      var target = Math.max(900, Math.min(1560, Math.round(window.innerHeight / zoom)));
+      band.style.height = target + 'px';
+      leftPanel.style.height = target + 'px';
+      rightPanel.style.height = target + 'px';
+    }
+    sizeSection();
+
+    /* breathing room: the viewport no longer kisses the band's edges — a
+       fixed inset above and a slightly larger one below keep the sphere
+       visually centred with clear margins instead of grazing the bottom */
+    var VP_TOP = 24, VP_BOTTOM = 48;
     function sizeViewport() {
-      if (isStacked()) { wrap.style.height = ''; return; }   // mobile css owns the height
-      var gap = parseFloat(getComputedStyle(leftPanel).rowGap) || 0;
+      if (isStacked()) {
+        wrap.style.height = ''; wrap.style.marginTop = ''; wrap.style.marginBottom = '';
+        return;                                            // mobile css owns the height
+      }
+      leftPanel.style.justifyContent = 'flex-start';
+      wrap.style.marginTop = VP_TOP + 'px';
+      wrap.style.marginBottom = VP_BOTTOM + 'px';
       var hh = headRow ? headRow.offsetHeight : 0;
-      var target = root.clientHeight - hh - gap;
+      var target = root.clientHeight - hh - VP_TOP - VP_BOTTOM;
       if (target > 300) wrap.style.height = target + 'px';
     }
     sizeViewport();
@@ -490,8 +521,10 @@
       var w = wrap.clientWidth, h = wrap.clientHeight;
       // centred in the space left of the story panel, sized to leave breathing room
       var cx = w / 2 + mapDX, cy = h / 2, R = Math.min(w + 2 * mapDX, h) * GLOBE_R * gZoom * uZoom;
-      // the sphere silhouette must never clip top or bottom, whatever the zoom
-      R = Math.min(R, h / 2 - 16);
+      // the sphere silhouette must never clip top or bottom, whatever the
+      // zoom — and it holds a touch more margin now that the section is a
+      // full-viewport hero, so it never reads as touching the boundary
+      R = Math.min(R, h / 2 - 28);
       updateRot();
       ctx.clearRect(0, 0, w, h);
       drawParticles(w, h);
@@ -1012,11 +1045,16 @@
     if (tourOn && !tourTimer) tourStep();
 
     window.addEventListener('resize', function () {
-      pinPanelRight();
-      sizeViewport();
-      computeMapOffset();
-      if (mode === 'flat') scene.style.transform = baseTransform();
-      else { sizeCanvas(); draw(); }
+      /* deferred one frame: aj-fit rewrites body zoom on this same event, and
+         the section height is derived from that zoom — read it after it lands */
+      requestAnimationFrame(function () {
+        sizeSection();
+        pinPanelRight();
+        sizeViewport();
+        computeMapOffset();
+        if (mode === 'flat') scene.style.transform = baseTransform();
+        else { sizeCanvas(); draw(); }
+      });
     });
   }
 
