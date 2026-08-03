@@ -13,12 +13,12 @@
   // base scale of the flat map inside its viewport (<1 leaves breathing room top/bottom)
   var MAP_SCALE = 0.86;
   // hover focus: gentle push-in, and how far the focused region eases toward centre
-  var HOVER_ZOOM = 1.35, PAN_EASE = 0.62;
+  var HOVER_ZOOM = 1.95, PAN_EASE = 0.62;
   // radius of a land dot on the flat map, in viewBox units (grid spacing is 2.35)
   var DOT_R = 0.66;
   // globe radius as a fraction of the smaller viewport axis — rests zoomed
   // out with generous sky around the sphere; the tour pushes in from here
-  var GLOBE_R = 0.36;
+  var GLOBE_R = 0.42;
   /* The landmass doesn't span the full -180..180 viewBox — it runs roughly -164..180, so
      drawing it raw leaves a wide gap on the left and none on the right. This offset (set
      once from the generated points) recentres the drawn land, and is applied to the dots
@@ -490,8 +490,10 @@
       var w = wrap.clientWidth, h = wrap.clientHeight;
       // centred in the space left of the story panel, sized to leave breathing room
       var cx = w / 2 + mapDX, cy = h / 2, R = Math.min(w + 2 * mapDX, h) * GLOBE_R * gZoom * uZoom;
-      // the sphere silhouette must never clip top or bottom, whatever the zoom
-      R = Math.min(R, h / 2 - 16);
+      /* The sphere silhouette must never clip top or bottom at rest — but a focused
+         country is meant to fill the frame, so let it push past that ceiling and
+         crop at the viewport edge instead of stopping short. */
+      R = Math.min(R, h / 2 - (focusEntry ? -h * 0.3 : 16));
       updateRot();
       ctx.clearRect(0, 0, w, h);
       drawParticles(w, h);
@@ -606,7 +608,7 @@
         if (Math.abs(vPitch) < 0.00004) vPitch = 0;
         if (!focusEntry && !vYaw && !REDUCE_MOTION) yaw += 0.0016 * dt;
       }
-      gZoom += ((focusEntry ? 1.35 : 1) - gZoom) * e12;   // pan+zoom into the focused region
+      gZoom += ((focusEntry ? 1.95 : 1) - gZoom) * e12;   // pan+zoom into the focused region
       uZoom += (tUZoom - uZoom) * (1 - Math.pow(0.85, dt));
       draw(now);
       raf = requestAnimationFrame(tick);
