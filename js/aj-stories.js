@@ -39,6 +39,10 @@
 
     /* the round-up cards get a subtle affordance */
     '.ajs-clickable{cursor:pointer}',
+
+    /* long-press bubble: the full headline behind a shortened rail caption */
+    '.ajs-tip{position:fixed;z-index:2147483001;max-width:260px;padding:7px 12px;background:#202020;color:#fff;border-radius:6px;font:500 12px/1.4 Anybody,Arial,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transition:opacity .18s ease;pointer-events:none}',
+    '.ajs-tip.on{opacity:1}',
     '@media(max-width:560px){.ajs-stage{height:100vh;max-height:none;aspect-ratio:auto;width:100vw}.ajs-title{font-size:23px}}',
     '@media (prefers-reduced-motion: reduce){.ajs-veil,.ajs-card img{transition:none}}'
   ].join('\n');
@@ -260,7 +264,68 @@
     return true;
   }
 
+  /* ---------------- shortened rail captions ----------------
+     The World Cup rail shows a short display title so nothing truncates in the
+     95px cards; the full headline sits in data-aj-full. Desktop already gets
+     the native title tooltip — here the full headline becomes the link's
+     accessible name, and touch gets a long-press bubble (title never shows on
+     touch). A long-press is not a tap: the click that follows it is swallowed
+     so the card doesn't also navigate. */
+  function labels() {
+    var caps = [].slice.call(document.querySelectorAll('p[data-aj-full]'));
+    if (!caps.length) return;
+    addStyle();
+    var tip = null, hideT = null;
+    function hide() {
+      clearTimeout(hideT);
+      if (!tip) return;
+      var t = tip; tip = null;
+      t.classList.remove('on');
+      setTimeout(function () { t.remove(); }, 200);
+    }
+    window.addEventListener('scroll', hide, { passive: true, capture: true });
+
+    caps.forEach(function (p) {
+      var full = p.getAttribute('data-aj-full');
+      var host = p.closest('a') || p;
+      if (host.tagName === 'A' && !host.getAttribute('aria-label')) host.setAttribute('aria-label', full);
+
+      var timer = null, fired = false;
+      host.addEventListener('touchstart', function () {
+        fired = false;
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          fired = true;
+          hide();
+          tip = document.createElement('div');
+          tip.className = 'ajs-tip';
+          tip.setAttribute('role', 'status');
+          tip.textContent = full;
+          document.body.appendChild(tip);
+          var r = p.getBoundingClientRect();
+          var x = Math.max(8, Math.min(window.innerWidth - tip.offsetWidth - 8, r.left + r.width / 2 - tip.offsetWidth / 2));
+          tip.style.left = x + 'px';
+          tip.style.top = (r.bottom + 8) + 'px';
+          requestAnimationFrame(function () { if (tip) tip.classList.add('on'); });
+        }, 450);
+      }, { passive: true });
+      host.addEventListener('touchmove', function () { clearTimeout(timer); hide(); }, { passive: true });
+      host.addEventListener('touchcancel', function () { clearTimeout(timer); hide(); }, { passive: true });
+      host.addEventListener('touchend', function () {
+        clearTimeout(timer);
+        if (tip) hideT = setTimeout(hide, 1400);   // linger long enough to read
+      }, { passive: true });
+      host.addEventListener('click', function (e) {
+        if (!fired) return;
+        e.preventDefault(); e.stopPropagation();   // the press was for the label
+        fired = false;
+      });
+      host.addEventListener('contextmenu', function (e) { if (fired) e.preventDefault(); });
+    });
+  }
+
   function init() {
+    labels();
     if (wire()) return;
     var n = 0, iv = setInterval(function () { if (wire() || ++n > 30) clearInterval(iv); }, 250);
   }
